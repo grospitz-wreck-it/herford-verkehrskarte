@@ -1,86 +1,39 @@
 <!DOCTYPE html>
-<html lang="de">
-
+<html>
 <head>
-
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title>Verkehr im Kreis Herford</title>
+<meta charset="utf-8"/>
+<title>Karte Test</title>
 
 <link rel="stylesheet"
 href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
-<link rel="stylesheet" href="css/style.css">
+<style>
+body{margin:0}
+#map{height:100vh}
+</style>
 
 </head>
 
 <body>
 
-<header class="site-header">
-
-<div class="container">
-
-<div class="logo">
-Verkehr
-<span>Kreis Herford</span>
-</div>
-
-<nav>
-
-<a href="#">Start</a>
-<a href="#">Nachrichten</a>
-<a href="#">Verkehr</a>
-
-</nav>
-
-</div>
-
-</header>
-
-<main class="container">
-
-<h1 class="page-title">
-Aktuelle Verkehrslage im Kreis Herford
-</h1>
-
-<div class="traffic-stats">
-
-<div class="stat">
-🚧 <span id="countBaustellen">0</span>
-Baustellen
-</div>
-
-<div class="stat">
-🚓 <span id="countUnfaelle">0</span>
-Unfälle
-</div>
-
-<div class="stat">
-⚠️ <span id="countGefahr">0</span>
-Gefahren
-</div>
-
-</div>
-
 <div id="map"></div>
-
-</main>
-
-<footer class="site-footer">
-
-<div class="container">
-Verkehrsdaten • OpenStreetMap
-</div>
-
-</footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<script src="js/map.js"></script>
-<script src="js/icons.js"></script>
-<script src="js/traffic.js"></script>
+<script>
+
+var map = L.map('map').setView([52.114,8.673],11);
+
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{attribution:'© OpenStreetMap'}
+).addTo(map);
+
+L.marker([52.114,8.673])
+.addTo(map)
+.bindPopup("Herford");
+
+</script>
 
 </body>
-
 </html>
