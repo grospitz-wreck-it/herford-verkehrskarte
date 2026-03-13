@@ -1,37 +1,29 @@
-name: Build Traffic Data
+name: Update Traffic
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
 
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
 
-      - name: Install dependencies
-        run: |
-          pip install requests
+      - run: pip install requests
 
-      - name: Build traffic file
-        run: |
-          python scripts/build_traffic.py
+      - run: python scripts/build_traffic.py
 
-      - name: Commit data
-        run: |
-          git config --global user.name "traffic-bot"
-          git config --global user.email "traffic-bot@users.noreply.github.com"
-          git add data/traffic.geojson
-          git commit -m "update traffic data" || echo "no changes"
+      - run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add data/traffic.json
+          git commit -m "update traffic" || echo "no changes"
           git push
