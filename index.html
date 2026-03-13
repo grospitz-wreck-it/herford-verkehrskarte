@@ -16,34 +16,10 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 body{
 margin:0;
 font-family:Arial, Helvetica, sans-serif;
-background:#fafafa;
-}
-
-header{
-background:white;
-border-bottom:1px solid #ddd;
-padding:15px 20px;
-font-size:22px;
-font-weight:bold;
-}
-
-.container{
-max-width:1100px;
-margin:auto;
-padding:20px;
 }
 
 #map{
-height:600px;
-border:1px solid #ddd;
-}
-
-.verkehr-ticker{
-background:#f4f4f4;
-border:1px solid #ddd;
-padding:10px 15px;
-margin-bottom:10px;
-font-size:15px;
+height:100vh;
 }
 
 </style>
@@ -52,32 +28,17 @@ font-size:15px;
 
 <body>
 
-<header>
-Verkehr im Kreis Herford
-</header>
-
-<div class="container">
-
-<div class="verkehr-ticker">
-<strong>Verkehrslage:</strong>
-<span id="ticker">Lade Verkehrsdaten …</span>
-</div>
-
 <div id="map"></div>
-
-</div>
-
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 
-// Karte starten
+// Karte
 
 var map = L.map('map').setView([52.114,8.673],11);
 
-
-// OpenStreetMap Layer
+// Basemap
 
 L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -88,18 +49,17 @@ attribution:'© OpenStreetMap'
 ).addTo(map);
 
 
-// Kreisgrenze laden
+// Kreisgrenze
 
 fetch("data/kreis-herford.geojson")
-.then(res => res.json())
-.then(data => {
+.then(r=>r.json())
+.then(data=>{
 
-var kreis = L.geoJSON(data,{
+var kreis=L.geoJSON(data,{
 style:{
-color:"#cc0000",
-weight:3,
-fillColor:"#cc0000",
-fillOpacity:0.05
+color:"#c4001a",
+weight:4,
+fill:false
 }
 }).addTo(map);
 
@@ -108,42 +68,48 @@ map.fitBounds(kreis.getBounds());
 });
 
 
-// Beispiel Verkehrsmeldungen
+// Gemeindegrenzen
 
-var meldungen = [
+fetch("data/gemeinden-herford.geojson")
+.then(r=>r.json())
+.then(data=>{
 
-{typ:"Baustelle",lat:52.12,lon:8.65,text:"Baustelle B239"},
-{typ:"Unfall",lat:52.18,lon:8.70,text:"Unfall Löhne"},
-{typ:"Gefahr",lat:52.20,lon:8.58,text:"Ölspur Bünde"}
-
-];
-
-let baustellen=0;
-let unfaelle=0;
-let gefahren=0;
-
-
-// Marker erstellen
-
-meldungen.forEach(m=>{
-
-L.marker([m.lat,m.lon])
-.addTo(map)
-.bindPopup(m.text);
-
-if(m.typ==="Baustelle") baustellen++;
-if(m.typ==="Unfall") unfaelle++;
-if(m.typ==="Gefahr") gefahren++;
+L.geoJSON(data,{
+style:{
+color:"#c4001a",
+weight:1,
+opacity:0.6,
+fill:false
+}
+}).addTo(map);
 
 });
 
 
-// Verkehrsticker
+// Beispiel Marker im NW-Rot
 
-document.getElementById("ticker").innerText =
-baustellen + " Baustellen • " +
-unfaelle + " Unfälle • " +
-gefahren + " Gefahrenmeldungen";
+var meldungen=[
+{lat:52.202,lon:8.586,text:"Baustelle Bünde"},
+{lat:52.181,lon:8.709,text:"Unfall Löhne"},
+{lat:52.114,lon:8.673,text:"Gefahr Herford"}
+];
+
+
+meldungen.forEach(m=>{
+
+L.circleMarker([m.lat,m.lon],{
+
+radius:7,
+color:"#c4001a",
+fillColor:"#c4001a",
+fillOpacity:1,
+weight:1
+
+})
+.addTo(map)
+.bindPopup(m.text);
+
+});
 
 </script>
 
