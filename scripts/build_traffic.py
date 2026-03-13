@@ -1,35 +1,49 @@
 import requests, json
 
-query = """
+features=[]
+
+
+# Baustellen aus OpenStreetMap
+query="""
 [out:json][timeout:25];
 (
-  node["highway"="construction"](51.9,8.4,52.3,8.9);
+ node["highway"="construction"](51.9,8.4,52.3,8.9);
+ way["highway"="construction"](51.9,8.4,52.3,8.9);
 );
-out;
+out center;
 """
 
 url="https://overpass-api.de/api/interpreter"
 
-r=requests.post(url,data=query)
-data=r.json()
+try:
+    r=requests.post(url,data=query,timeout=30)
+    data=r.json()
 
-features=[]
+    for el in data["elements"]:
 
-for el in data["elements"]:
-    lat=el["lat"]
-    lon=el["lon"]
+        if "lat" in el:
+            lat=el["lat"]
+            lon=el["lon"]
+        else:
+            lat=el["center"]["lat"]
+            lon=el["center"]["lon"]
 
-    features.append({
+        features.append({
         "type":"Feature",
         "properties":{
-            "title":"Baustelle",
-            "type":"construction"
+        "title":"Baustelle",
+        "type":"construction"
         },
         "geometry":{
-            "type":"Point",
-            "coordinates":[lon,lat]
+        "type":"Point",
+        "coordinates":[lon,lat]
         }
-    })
+        })
+
+except:
+    pass
+
+
 
 geojson={
 "type":"FeatureCollection",
