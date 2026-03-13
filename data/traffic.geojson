@@ -5,26 +5,24 @@
 {
 "type":"Feature",
 "properties":{
-"title":"Baustelle A30 Hiddenhausen",
-"type":"baustelle",
-"city":"Hiddenhausen"
+"title":"Baustelle B239 Herford",
+"type":"baustelle"
 },
 "geometry":{
 "type":"Point",
-"coordinates":[8.65,52.12]
+"coordinates":[8.672,52.114]
 }
 },
 
 {
 "type":"Feature",
 "properties":{
-"title":"Unfall B239 Herford",
-"type":"unfall",
-"city":"Herford"
+"title":"Unfall A30 Bünde",
+"type":"unfall"
 },
 "geometry":{
 "type":"Point",
-"coordinates":[8.67,52.11]
+"coordinates":[8.598,52.198]
 }
 }
 
