@@ -1,51 +1,26 @@
-var map = L.map('map');
+var map = L.map('map').setView([52.114, 8.673], 11);
 
+// OpenStreetMap Karte
 L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{
-attribution:'© OpenStreetMap'
+  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap'
+  }
+).addTo(map);
+
+// einfache Kreisgrenze (Bounding Box Kreis Herford)
+
+var kreis = L.polygon([
+  [51.98, 8.45],
+  [51.98, 8.90],
+  [52.25, 8.90],
+  [52.25, 8.45]
+],{
+  color:"#cc0000",
+  weight:3,
+  fillColor:"#cc0000",
+  fillOpacity:0.05
 }).addTo(map);
 
-
-// Kreisgrenze
-
-fetch("data/kreis-herford.geojson")
-.then(res=>res.json())
-.then(data=>{
-
-var kreisLayer=L.geoJSON(data,{
-style:{
-color:"#cc0000",
-weight:3,
-fillColor:"#cc0000",
-fillOpacity:0.05
-}
-}).addTo(map)
-
-map.fitBounds(kreisLayer.getBounds())
-
-})
-
-
-// Gemeinden laden
-
-fetch("data/gemeinden.json")
-.then(res=>res.json())
-.then(data=>{
-
-data.forEach(g=>{
-
-L.circleMarker([g.lat,g.lon],{
-
-radius:6,
-color:"#333",
-fillColor:"#333",
-fillOpacity:1
-
-})
-.addTo(map)
-.bindTooltip(g.name,{permanent:true,direction:"top"})
-
-})
-
-})
+map.fitBounds(kreis.getBounds());
