@@ -1,16 +1,32 @@
-
 {
 "type":"FeatureCollection",
 "features":[
+
 {
 "type":"Feature",
 "properties":{
-"title":"Baustelle A30 Ausfahrt Hiddenhausen"
+"title":"Baustelle A30 Hiddenhausen",
+"type":"baustelle",
+"city":"Hiddenhausen"
 },
 "geometry":{
 "type":"Point",
 "coordinates":[8.65,52.12]
 }
+},
+
+{
+"type":"Feature",
+"properties":{
+"title":"Unfall B239 Herford",
+"type":"unfall",
+"city":"Herford"
+},
+"geometry":{
+"type":"Point",
+"coordinates":[8.67,52.11]
 }
+}
+
 ]
 }
