@@ -6,7 +6,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Live Verkehr im Kreis Herford</title>
+<title>Verkehr im Kreis Herford</title>
 
 <link rel="stylesheet"
 href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -17,39 +17,49 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <body>
 
-<header>
+<header class="site-header">
 
 <div class="container">
-<h1>Verkehr im Kreis Herford</h1>
+
+<div class="logo">
+Verkehr
+<span>Kreis Herford</span>
+</div>
+
+<nav>
+
+<a href="#">Start</a>
+<a href="#">Nachrichten</a>
+<a href="#">Verkehr</a>
+
+</nav>
+
 </div>
 
 </header>
 
 <main class="container">
 
+<h1 class="page-title">
+Aktuelle Verkehrslage im Kreis Herford
+</h1>
+
 <div class="traffic-stats">
 
 <div class="stat">
-🚧 <span id="countBaustellen">0</span> Baustellen
+🚧 <span id="countBaustellen">0</span>
+Baustellen
 </div>
 
 <div class="stat">
-🚓 <span id="countUnfaelle">0</span> Unfälle
+🚓 <span id="countUnfaelle">0</span>
+Unfälle
 </div>
 
 <div class="stat">
-⚠️ <span id="countGefahr">0</span> Gefahren
+⚠️ <span id="countGefahr">0</span>
+Gefahren
 </div>
-
-</div>
-
-<div class="filters">
-
-<button onclick="filterCity('Alle')">Alle</button>
-<button onclick="filterCity('Herford')">Herford</button>
-<button onclick="filterCity('Bünde')">Bünde</button>
-<button onclick="filterCity('Löhne')">Löhne</button>
-<button onclick="filterCity('Hiddenhausen')">Hiddenhausen</button>
 
 </div>
 
@@ -57,10 +67,10 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 </main>
 
-<footer>
+<footer class="site-footer">
 
 <div class="container">
-<p>Verkehrskarte – Datenbasis OpenStreetMap</p>
+Verkehrsdaten • OpenStreetMap
 </div>
 
 </footer>
@@ -70,8 +80,6 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="js/map.js"></script>
 <script src="js/icons.js"></script>
 <script src="js/traffic.js"></script>
-<script src="js/filters.js"></script>
-<script src="js/baustellen.js"></script>
 
 </body>
 
