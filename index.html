@@ -1,37 +1,153 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
-<meta charset="utf-8"/>
-<title>Karte Test</title>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Verkehr im Kreis Herford</title>
 
 <link rel="stylesheet"
 href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
-body{margin:0}
-#map{height:100vh}
+
+body{
+margin:0;
+font-family:Arial, Helvetica, sans-serif;
+background:#fafafa;
+}
+
+header{
+background:white;
+border-bottom:1px solid #ddd;
+padding:15px 20px;
+font-size:22px;
+font-weight:bold;
+}
+
+.container{
+max-width:1100px;
+margin:auto;
+padding:20px;
+}
+
+#map{
+height:600px;
+border:1px solid #ddd;
+}
+
+.verkehr-ticker{
+background:#f4f4f4;
+border:1px solid #ddd;
+padding:10px 15px;
+margin-bottom:10px;
+font-size:15px;
+}
+
 </style>
 
 </head>
 
 <body>
 
+<header>
+Verkehr im Kreis Herford
+</header>
+
+<div class="container">
+
+<div class="verkehr-ticker">
+<strong>Verkehrslage:</strong>
+<span id="ticker">Lade Verkehrsdaten …</span>
+</div>
+
 <div id="map"></div>
+
+</div>
+
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 
+// Karte starten (Herford Zentrum)
+
 var map = L.map('map').setView([52.114,8.673],11);
+
+
+// OpenStreetMap Layer
 
 L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{attribution:'© OpenStreetMap'}
+{
+maxZoom:19,
+attribution:'© OpenStreetMap'
+}
 ).addTo(map);
+
+
+// Marker Herford
 
 L.marker([52.114,8.673])
 .addTo(map)
 .bindPopup("Herford");
+
+
+// Kreis Herford Fläche
+
+var kreis = L.polygon([
+[52.25,8.45],
+[52.25,8.90],
+[51.98,8.90],
+[51.98,8.45]
+],{
+color:"#cc0000",
+weight:3,
+fillColor:"#cc0000",
+fillOpacity:0.05
+}).addTo(map);
+
+
+// Zoom auf Kreis
+
+map.fitBounds(kreis.getBounds());
+
+
+// Beispiel Verkehrsdaten (Test)
+
+var meldungen = [
+{typ:"Baustelle",lat:52.12,lon:8.65,text:"Baustelle B239"},
+{typ:"Unfall",lat:52.18,lon:8.70,text:"Unfall Löhne"},
+{typ:"Gefahr",lat:52.20,lon:8.58,text:"Ölspur Bünde"}
+];
+
+let baustellen=0;
+let unfaelle=0;
+let gefahren=0;
+
+
+// Marker erstellen
+
+meldungen.forEach(m=>{
+
+L.marker([m.lat,m.lon])
+.addTo(map)
+.bindPopup(m.text);
+
+if(m.typ==="Baustelle") baustellen++;
+if(m.typ==="Unfall") unfaelle++;
+if(m.typ==="Gefahr") gefahren++;
+
+});
+
+
+// Verkehrsticker
+
+document.getElementById("ticker").innerText =
+baustellen + " Baustellen • " +
+unfaelle + " Unfälle • " +
+gefahren + " Gefahrenmeldungen";
 
 </script>
 
