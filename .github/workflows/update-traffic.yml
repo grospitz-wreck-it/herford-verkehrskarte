@@ -2,9 +2,9 @@
 name: Update Traffic
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: "*/30 * * * *"
-
 jobs:
   update:
 
