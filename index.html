@@ -6,34 +6,67 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Verkehr im Kreis Herford</title>
+<title>Verkehrsinfos im Kreis Herford</title>
 
 <link rel="stylesheet"
 href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css"/>
-
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css"/>
 
 <style>
 
 body{
 margin:0;
 font-family:Arial, Helvetica, sans-serif;
+background:#f5f5f5;
+}
+
+.header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:12px 16px;
+background:white;
+border-bottom:2px solid #c4001a;
+}
+
+.header h1{
+font-size:18px;
+margin:0;
+}
+
+.logo img{
+height:32px;
+}
+
+.container{
+padding:10px;
+}
+
+.mapbox{
+background:white;
+border-radius:8px;
+overflow:hidden;
+box-shadow:0 2px 6px rgba(0,0,0,0.15);
 }
 
 #map{
-height:100vh;
+height:70vh;
+min-height:420px;
 }
 
-.label-gemeinde{
-background:white;
-border:1px solid #ccc;
-padding:2px 6px;
-font-size:12px;
-font-weight:bold;
+.leaflet-control-zoom a{
+font-size:20px;
+}
+
+@media(max-width:600px){
+
+.header h1{
+font-size:16px;
+}
+
+#map{
+height:75vh;
+}
+
 }
 
 </style>
@@ -42,21 +75,30 @@ font-weight:bold;
 
 <body>
 
+<div class="header">
+
+<h1>Verkehrsinfos im Kreis Herford</h1>
+
+<div class="logo">
+<img src="https://www.nw.de/_em_daten/locals/module/nw/_includes/twig/current/public/images/nw-logo-wortmarke.svg">
+</div>
+
+</div>
+
+<div class="container">
+
+<div class="mapbox">
 <div id="map"></div>
+</div>
+
+</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
-
 <script>
 
-
-// Karte starten
-
-var map=L.map("map").setView([52.114,8.673],11);
-
-
-// Basiskarte
+var map=L.map("map",{zoomControl:true})
+.setView([52.114,8.673],11);
 
 L.tileLayer(
 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -67,84 +109,21 @@ attribution:"© OpenStreetMap"
 ).addTo(map);
 
 
-
-// Kreisgrenze laden
-
-fetch("data/kreis-herford.geojson")
-.then(r=>r.json())
-.then(data=>{
-
-var kreis=L.geoJSON(data,{
-style:{
-color:"#c4001a",
-weight:4,
-fill:false
-}
-}).addTo(map);
-
-map.fitBounds(kreis.getBounds());
-
-});
-
-
-
-// Gemeindegrenzen laden
-
-fetch("data/gemeinden-herford.geojson")
-.then(r=>r.json())
-.then(data=>{
-
-L.geoJSON(data,{
-
-style:{
-color:"#c4001a",
-weight:1,
-opacity:0.5,
-fill:false
-},
-
-onEachFeature:function(feature,layer){
-
-var name=feature.properties.name;
-
-layer.bindTooltip(name,{
-permanent:true,
-direction:"center",
-className:"label-gemeinde"
-});
-
-}
-
-}).addTo(map);
-
-});
-
-
-
-// Marker Cluster Gruppe
-
-var cluster=L.markerClusterGroup();
-
-
-
-// Verkehrsdaten laden
+// Verkehrsmarker laden
 
 fetch("data/traffic.json")
 .then(r=>r.json())
 .then(data=>{
 
-var trafficLayer=L.geoJSON(data,{
+L.geoJSON(data,{
 
 pointToLayer:function(feature,latlng){
 
 return L.circleMarker(latlng,{
-
 radius:7,
 color:"#c4001a",
 fillColor:"#c4001a",
-fillOpacity:1,
-weight:1
-
+fillOpacity:1
 });
 
 },
@@ -155,15 +134,9 @@ layer.bindPopup(feature.properties.title);
 
 }
 
-});
-
-
-cluster.addLayer(trafficLayer);
-
-map.addLayer(cluster);
+}).addTo(map);
 
 });
-
 
 </script>
 
