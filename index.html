@@ -20,14 +20,28 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <header>
 
 <div class="container">
-
 <h1>Verkehr im Kreis Herford</h1>
-
 </div>
 
 </header>
 
 <main class="container">
+
+<div class="traffic-stats">
+
+<div class="stat">
+🚧 <span id="countBaustellen">0</span> Baustellen
+</div>
+
+<div class="stat">
+🚓 <span id="countUnfaelle">0</span> Unfälle
+</div>
+
+<div class="stat">
+⚠️ <span id="countGefahr">0</span> Gefahren
+</div>
+
+</div>
 
 <div class="filters">
 
@@ -36,8 +50,6 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <button onclick="filterCity('Bünde')">Bünde</button>
 <button onclick="filterCity('Löhne')">Löhne</button>
 <button onclick="filterCity('Hiddenhausen')">Hiddenhausen</button>
-<button onclick="filterCity('Enger')">Enger</button>
-<button onclick="filterCity('Spenge')">Spenge</button>
 
 </div>
 
@@ -48,24 +60,18 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <footer>
 
 <div class="container">
-
-<p>
-
-Verkehrsdaten – Karte basierend auf
-OpenStreetMap
-
-</p>
-
+<p>Verkehrskarte – Datenbasis OpenStreetMap</p>
 </div>
 
 </footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<script src="js/icons.js"></script>
 <script src="js/map.js"></script>
+<script src="js/icons.js"></script>
 <script src="js/traffic.js"></script>
 <script src="js/filters.js"></script>
+<script src="js/baustellen.js"></script>
 
 </body>
 
