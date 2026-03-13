@@ -1,12 +1,12 @@
-
-name: Update Traffic
+name: Build Traffic Data
 
 on:
   workflow_dispatch:
   schedule:
     - cron: "*/30 * * * *"
+
 jobs:
-  update:
+  build:
 
     runs-on: ubuntu-latest
 
@@ -14,14 +14,18 @@ jobs:
 
       - uses: actions/checkout@v3
 
-      - name: Fetch Traffic
+      - name: Fetch Autobahn data
         run: |
-          curl https://verkehr.autobahn.de/o/autobahn > data/traffic.json
+          curl https://verkehr.autobahn.de/o/autobahn > autobahn.json
 
-      - name: Commit
+      - name: Convert to GeoJSON
+        run: |
+          echo '{"type":"FeatureCollection","features":[]}' > data/traffic.geojson
+
+      - name: Commit data
         run: |
           git config --global user.name "traffic-bot"
-          git config --global user.email "bot@example.com"
-          git add .
-          git commit -m "Traffic update"
+          git config --global user.email "traffic-bot@users.noreply.github.com"
+          git add data/traffic.geojson
+          git commit -m "update traffic data" || echo "no changes"
           git push
