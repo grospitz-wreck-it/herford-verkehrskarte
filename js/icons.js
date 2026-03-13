@@ -1,4 +1,3 @@
-
 const icons = {
 
 baustelle: L.icon({
