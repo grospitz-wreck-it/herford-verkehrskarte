@@ -1,8 +1,26 @@
-const map = L.map('map').setView([52.115,8.673],11);
+var map = L.map('map').setView([52.11, 8.67], 11);
 
 L.tileLayer(
-'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 {
 attribution:'© OpenStreetMap'
+}).addTo(map);
+
+
+// Kreisgrenze laden
+
+fetch("data/kreis-herford.geojson")
+.then(res => res.json())
+.then(data => {
+
+L.geoJSON(data,{
+
+style:{
+color:"#cc0000",
+weight:3,
+fill:false
 }
-).addTo(map);
+
+}).addTo(map)
+
+})
