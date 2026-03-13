@@ -1,91 +1,43 @@
 import json
 import requests
-import xml.etree.ElementTree as ET
 
-bbox = {
-"minLat":51.98,
-"maxLat":52.25,
-"minLon":8.45,
-"maxLon":8.90
-}
+overpass_query = """
+[out:json][timeout:25];
+(
+  way["highway"="construction"](51.98,8.45,52.25,8.90);
+  node["highway"="construction"](51.98,8.45,52.25,8.90);
+);
+out center;
+"""
 
-def in_herford(lat,lon):
-    return (
-        lat > bbox["minLat"] and
-        lat < bbox["maxLat"] and
-        lon > bbox["minLon"] and
-        lon < bbox["maxLon"]
-    )
+url = "https://overpass-api.de/api/interpreter"
+
+r = requests.post(url,data=overpass_query)
+
+data = r.json()
 
 features=[]
 
-# Autobahn API
-try:
-    r=requests.get("https://verkehr.autobahn.de/o/autobahn")
-    data=r.json()
+for e in data["elements"]:
 
-    for road in data["roads"]:
-        if "events" not in road:
-            continue
+    if "lat" in e:
+        lat=e["lat"]
+        lon=e["lon"]
+    else:
+        lat=e["center"]["lat"]
+        lon=e["center"]["lon"]
 
-        for e in road["events"]:
-
-            lat=e.get("latitude")
-            lon=e.get("longitude")
-
-            if not lat or not lon:
-                continue
-
-            if not in_herford(lat,lon):
-                continue
-
-            text=e.get("description","Verkehrsmeldung")
-
-            typ="gefahr"
-
-            if "unfall" in text.lower():
-                typ="unfall"
-            elif "baustelle" in text.lower():
-                typ="baustelle"
-
-            features.append({
-                "type":"Feature",
-                "properties":{
-                    "title":text,
-                    "type":typ
-                },
-                "geometry":{
-                    "type":"Point",
-                    "coordinates":[lon,lat]
-                }
-            })
-except:
-    pass
-
-# Polizei RSS
-try:
-    rss=requests.get("https://www.presseportal.de/rss/polizei/nordrhein-westfalen").text
-    root=ET.fromstring(rss)
-
-    for item in root.findall(".//item"):
-
-        title=item.find("title").text
-
-        if "Herford" in title or "Bünde" in title or "Löhne" in title:
-
-            features.append({
-                "type":"Feature",
-                "properties":{
-                    "title":title,
-                    "type":"gefahr"
-                },
-                "geometry":{
-                    "type":"Point",
-                    "coordinates":[8.67,52.11]
-                }
-            })
-except:
-    pass
+    features.append({
+        "type":"Feature",
+        "properties":{
+            "title":"Baustelle",
+            "type":"baustelle"
+        },
+        "geometry":{
+            "type":"Point",
+            "coordinates":[lon,lat]
+        }
+    })
 
 geojson={
 "type":"FeatureCollection",
