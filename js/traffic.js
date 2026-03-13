@@ -1,14 +1,16 @@
 let trafficLayer;
 
-let countBaustellen = 0;
-let countUnfaelle = 0;
-let countGefahr = 0;
+let stats = {
+baustellen:0,
+unfaelle:0,
+gefahren:0
+};
 
 const HERFORD_BBOX = {
 
-minLat:52.00,
+minLat:51.98,
 maxLat:52.25,
-minLon:8.50,
+minLon:8.45,
 maxLon:8.90
 
 };
@@ -24,25 +26,36 @@ lon < HERFORD_BBOX.maxLon
 
 }
 
+function resetStats(){
+
+stats.baustellen = 0;
+stats.unfaelle = 0;
+stats.gefahren = 0;
+
+}
+
+function updateStats(){
+
+document.getElementById("countBaustellen").innerText = stats.baustellen;
+document.getElementById("countUnfaelle").innerText = stats.unfaelle;
+document.getElementById("countGefahr").innerText = stats.gefahren;
+
+}
+
 async function loadTraffic(){
 
 if(trafficLayer){
 map.removeLayer(trafficLayer);
 }
 
-countBaustellen = 0;
-countUnfaelle = 0;
-countGefahr = 0;
+resetStats();
+
+let features = [];
 
 try{
 
-const response = await fetch(
-"https://verkehr.autobahn.de/o/autobahn"
-);
-
-const data = await response.json();
-
-let features = [];
+const res = await fetch("https://verkehr.autobahn.de/o/autobahn");
+const data = await res.json();
 
 data.roads.forEach(road=>{
 
@@ -53,33 +66,35 @@ road.events.forEach(event=>{
 const lat = event.latitude;
 const lon = event.longitude;
 
+if(!lat || !lon) return;
 if(!inHerford(lat,lon)) return;
 
 let type="gefahr";
 
-if(event.description.includes("Baustelle")){
-type="baustelle";
-countBaustellen++;
-}
-
-if(event.description.includes("Unfall")){
+if(event.description.toLowerCase().includes("unfall")){
 type="unfall";
-countUnfaelle++;
+stats.unfaelle++;
+}
+else if(event.description.toLowerCase().includes("baustelle")){
+type="baustelle";
+stats.baustellen++;
+}
+else{
+stats.gefahren++;
 }
 
 features.push({
 
-"type":"Feature",
+type:"Feature",
 
-"properties":{
-"title":event.description,
-"type":type,
-"city":"Kreis Herford"
+properties:{
+title:event.description,
+type:type
 },
 
-"geometry":{
-"type":"Point",
-"coordinates":[lon,lat]
+geometry:{
+type:"Point",
+coordinates:[lon,lat]
 }
 
 });
@@ -88,10 +103,37 @@ features.push({
 
 });
 
+}catch(err){
+
+console.log("Autobahn API Fehler");
+
+}
+
+try{
+
+const res2 = await fetch("data/traffic.geojson");
+const localData = await res2.json();
+
+localData.features.forEach(f=>{
+
+features.push(f);
+
+if(f.properties.type==="baustelle") stats.baustellen++;
+if(f.properties.type==="unfall") stats.unfaelle++;
+if(f.properties.type==="gefahr") stats.gefahren++;
+
+});
+
+}catch(e){
+
+console.log("keine lokalen Daten");
+
+}
+
 trafficLayer = L.geoJSON({
 
-"type":"FeatureCollection",
-"features":features
+type:"FeatureCollection",
+features:features
 
 },{
 
@@ -114,22 +156,16 @@ return L.marker(latlng,{icon:icon});
 onEachFeature:function(feature,layer){
 
 layer.bindPopup(
+
 "<b>"+feature.properties.title+"</b>"
+
 )
 
 }
 
 }).addTo(map);
 
-document.getElementById("countBaustellen").innerText=countBaustellen;
-document.getElementById("countUnfaelle").innerText=countUnfaelle;
-document.getElementById("countGefahr").innerText=countGefahr;
-
-}catch(err){
-
-console.log("Traffic API Fehler",err);
-
-}
+updateStats();
 
 }
 
