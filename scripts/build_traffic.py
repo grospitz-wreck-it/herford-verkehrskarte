@@ -1,6 +1,6 @@
-
 import json
 import requests
+import xml.etree.ElementTree as ET
 
 bbox = {
 "minLat":51.98,
@@ -17,11 +17,12 @@ def in_herford(lat,lon):
         lon < bbox["maxLon"]
     )
 
-features = []
+features=[]
 
+# Autobahn API
 try:
-    r = requests.get("https://verkehr.autobahn.de/o/autobahn")
-    data = r.json()
+    r=requests.get("https://verkehr.autobahn.de/o/autobahn")
+    data=r.json()
 
     for road in data["roads"]:
         if "events" not in road:
@@ -29,8 +30,8 @@ try:
 
         for e in road["events"]:
 
-            lat = e.get("latitude")
-            lon = e.get("longitude")
+            lat=e.get("latitude")
+            lon=e.get("longitude")
 
             if not lat or not lon:
                 continue
@@ -38,9 +39,9 @@ try:
             if not in_herford(lat,lon):
                 continue
 
-            text = e.get("description","Verkehrsmeldung")
+            text=e.get("description","Verkehrsmeldung")
 
-            typ = "gefahr"
+            typ="gefahr"
 
             if "unfall" in text.lower():
                 typ="unfall"
@@ -58,11 +59,35 @@ try:
                     "coordinates":[lon,lat]
                 }
             })
-
 except:
     pass
 
-geojson = {
+# Polizei RSS
+try:
+    rss=requests.get("https://www.presseportal.de/rss/polizei/nordrhein-westfalen").text
+    root=ET.fromstring(rss)
+
+    for item in root.findall(".//item"):
+
+        title=item.find("title").text
+
+        if "Herford" in title or "Bünde" in title or "Löhne" in title:
+
+            features.append({
+                "type":"Feature",
+                "properties":{
+                    "title":title,
+                    "type":"gefahr"
+                },
+                "geometry":{
+                    "type":"Point",
+                    "coordinates":[8.67,52.11]
+                }
+            })
+except:
+    pass
+
+geojson={
 "type":"FeatureCollection",
 "features":features
 }
