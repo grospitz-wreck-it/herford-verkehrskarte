@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
 
 <meta charset="utf-8">
@@ -71,7 +72,7 @@ Verkehr im Kreis Herford
 
 <script>
 
-// Karte starten (Herford Zentrum)
+// Karte starten
 
 var map = L.map('map').setView([52.114,8.673],11);
 
@@ -87,39 +88,34 @@ attribution:'© OpenStreetMap'
 ).addTo(map);
 
 
-// Marker Herford
+// Kreisgrenze laden
 
-L.marker([52.114,8.673])
-.addTo(map)
-.bindPopup("Herford");
+fetch("data/kreis-herford.geojson")
+.then(res => res.json())
+.then(data => {
 
-
-// Kreis Herford Fläche
-
-var kreis = L.polygon([
-[52.25,8.45],
-[52.25,8.90],
-[51.98,8.90],
-[51.98,8.45]
-],{
+var kreis = L.geoJSON(data,{
+style:{
 color:"#cc0000",
 weight:3,
 fillColor:"#cc0000",
 fillOpacity:0.05
+}
 }).addTo(map);
-
-
-// Zoom auf Kreis
 
 map.fitBounds(kreis.getBounds());
 
+});
 
-// Beispiel Verkehrsdaten (Test)
+
+// Beispiel Verkehrsmeldungen
 
 var meldungen = [
+
 {typ:"Baustelle",lat:52.12,lon:8.65,text:"Baustelle B239"},
 {typ:"Unfall",lat:52.18,lon:8.70,text:"Unfall Löhne"},
 {typ:"Gefahr",lat:52.20,lon:8.58,text:"Ölspur Bünde"}
+
 ];
 
 let baustellen=0;
