@@ -1,11 +1,12 @@
-
 <!DOCTYPE html>
 <html lang="de">
 
 <head>
 
 <meta charset="utf-8">
-<title>Live Verkehr Kreis Herford</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Live Verkehr im Kreis Herford</title>
 
 <link rel="stylesheet"
 href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -17,15 +18,54 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <body>
 
 <header>
+
+<div class="container">
+
 <h1>Verkehr im Kreis Herford</h1>
+
+</div>
+
 </header>
+
+<main class="container">
+
+<div class="filters">
+
+<button onclick="filterCity('Alle')">Alle</button>
+<button onclick="filterCity('Herford')">Herford</button>
+<button onclick="filterCity('Bünde')">Bünde</button>
+<button onclick="filterCity('Löhne')">Löhne</button>
+<button onclick="filterCity('Hiddenhausen')">Hiddenhausen</button>
+<button onclick="filterCity('Enger')">Enger</button>
+<button onclick="filterCity('Spenge')">Spenge</button>
+
+</div>
 
 <div id="map"></div>
 
+</main>
+
+<footer>
+
+<div class="container">
+
+<p>
+
+Verkehrsdaten – Karte basierend auf
+OpenStreetMap
+
+</p>
+
+</div>
+
+</footer>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+<script src="js/icons.js"></script>
 <script src="js/map.js"></script>
 <script src="js/traffic.js"></script>
+<script src="js/filters.js"></script>
 
 </body>
 
