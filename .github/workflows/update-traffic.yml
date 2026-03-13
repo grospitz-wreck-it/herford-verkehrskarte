@@ -3,7 +3,7 @@ name: Build Traffic Data
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "0 * * * *"
 
 jobs:
   build:
@@ -12,20 +12,23 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
 
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
 
-      - name: Install requests
-        run: pip install requests
+      - name: Install dependencies
+        run: |
+          pip install requests
 
-      - name: Build traffic
-        run: python scripts/build_traffic.py
+      - name: Build traffic file
+        run: |
+          python scripts/build_traffic.py
 
-      - name: Commit new data
+      - name: Commit data
         run: |
           git config --global user.name "traffic-bot"
           git config --global user.email "traffic-bot@users.noreply.github.com"
