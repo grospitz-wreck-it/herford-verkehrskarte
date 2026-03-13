@@ -1,26 +1,29 @@
-var map = L.map('map').setView([52.114, 8.673], 11);
+fetch("data/traffic.json")
+.then(r=>r.json())
+.then(data=>{
 
-// OpenStreetMap Karte
-L.tileLayer(
-  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-  {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap'
-  }
-).addTo(map);
+L.geoJSON(data,{
 
-// einfache Kreisgrenze (Bounding Box Kreis Herford)
+pointToLayer:function(feature,latlng){
 
-var kreis = L.polygon([
-  [51.98, 8.45],
-  [51.98, 8.90],
-  [52.25, 8.90],
-  [52.25, 8.45]
-],{
-  color:"#cc0000",
-  weight:3,
-  fillColor:"#cc0000",
-  fillOpacity:0.05
+return L.circleMarker(latlng,{
+
+radius:7,
+color:"#c4001a",
+fillColor:"#c4001a",
+fillOpacity:1,
+weight:1
+
+});
+
+},
+
+onEachFeature:function(feature,layer){
+
+layer.bindPopup(feature.properties.title);
+
+}
+
 }).addTo(map);
 
-map.fitBounds(kreis.getBounds());
+});
