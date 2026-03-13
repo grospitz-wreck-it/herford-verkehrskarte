@@ -1,1 +1,27 @@
 
+name: Update Traffic
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+
+jobs:
+  update:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v3
+
+      - name: Fetch Traffic
+        run: |
+          curl https://verkehr.autobahn.de/o/autobahn > data/traffic.json
+
+      - name: Commit
+        run: |
+          git config --global user.name "traffic-bot"
+          git config --global user.email "bot@example.com"
+          git add .
+          git commit -m "Traffic update"
+          git push
