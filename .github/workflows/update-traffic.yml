@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
+
   build:
 
     runs-on: ubuntu-latest
@@ -22,10 +23,10 @@ jobs:
       - name: Run script
         run: python scripts/build_traffic.py
 
-      - name: Commit
+      - name: Commit changes
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
           git add data/traffic.json
-          git commit -m "update traffic" || echo "no change"
+          git commit -m "update traffic" || echo "no changes"
           git push
