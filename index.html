@@ -1,9 +1,12 @@
-```html
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
+
 <meta charset="utf-8">
-<title>Verkehrskarte</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Verkehrsinfos im Kreis Herford</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
@@ -11,28 +14,86 @@
 
 <style>
 
-html,body{
+body{
 margin:0;
-padding:0;
+font-family:Arial,Helvetica,sans-serif;
+background:#f5f5f5;
+}
+
+.header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:12px 16px;
+background:white;
+border-bottom:2px solid #c4001a;
+}
+
+.header h1{
+font-size:18px;
+margin:0;
+}
+
+.logo img{
+height:32px;
+}
+
+.container{
+padding:10px;
+}
+
+.mapbox{
+background:white;
+border-radius:8px;
+overflow:hidden;
+box-shadow:0 2px 6px rgba(0,0,0,0.15);
 }
 
 #map{
-height:100vh;
+height:75vh;
+min-height:420px;
 width:100%;
 }
 
 .emoji-marker{
-font-size:34px;
+font-size:32px;
 text-align:center;
-line-height:34px;
+line-height:32px;
+}
+
+@media(max-width:600px){
+
+.header h1{
+font-size:16px;
+}
+
+#map{
+height:80vh;
+}
+
 }
 
 </style>
 
 </head>
+
 <body>
 
+<div class="header">
+
+<h1>Verkehrsinfos im Kreis Herford</h1>
+
+<div class="logo">
+<img src="https://www.nw.de/_em_daten/locals/module/nw/_includes/twig/current/public/images/nw-logo-wortmarke.svg">
+</div>
+
+</div>
+
+<div class="container">
+<div class="mapbox">
 <div id="map"></div>
+</div>
+</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
@@ -40,12 +101,17 @@ line-height:34px;
 <script>
 
 // Karte starten
-const map = L.map('map').setView([52.52,13.405],12)
+const map = L.map("map",{zoomControl:true})
+.setView([52.114,8.673],11)
+
 
 // Basiskarte
 L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{ attribution:'© OpenStreetMap' }
+"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+{
+maxZoom:19,
+attribution:"© OpenStreetMap"
+}
 ).addTo(map)
 
 
@@ -60,7 +126,7 @@ iconAnchor:[18,18]
 }
 
 
-// Layer Gruppen
+// Markercluster Layer
 const policeLayer = L.markerClusterGroup()
 const constructionLayer = L.markerClusterGroup()
 const warningLayer = L.markerClusterGroup()
@@ -81,15 +147,92 @@ layer.addLayer(marker)
 }
 
 
-// Beispiel Daten
-addMarker(policeLayer,52.52,13.405,"🚓","Polizei")
-addMarker(policeLayer,52.518,13.39,"🚓","Polizeikontrolle")
+// Kreis laden
+let kreisGeo
 
-addMarker(constructionLayer,52.525,13.41,"🚧","Baustelle")
+fetch("data/kreis-herford.geojson")
+.then(r=>r.json())
+.then(data=>{
 
-addMarker(warningLayer,52.517,13.43,"⚠️","Gefahrstelle")
+kreisGeo=data
 
-addMarker(trafficLayer,52.53,13.42,"🚗","Stau")
+const kreisLayer=L.geoJSON(data,{
+style:{
+color:"#c4001a",
+weight:3,
+fill:false
+}
+}).addTo(map)
+
+map.fitBounds(kreisLayer.getBounds())
+
+
+// Maske außerhalb Kreis
+const world={
+"type":"Feature",
+"geometry":{
+"type":"Polygon",
+"coordinates":[[
+[-180,-90],
+[-180,90],
+[180,90],
+[180,-90],
+[-180,-90]
+]]
+}
+}
+
+const mask={
+"type":"FeatureCollection",
+"features":[
+world,
+data.features[0]
+]
+}
+
+L.geoJSON(mask,{
+style:{
+fillColor:"#000",
+fillOpacity:0.35,
+stroke:false
+}
+}).addTo(map)
+
+})
+
+
+// Verkehrsdaten laden
+fetch("data/traffic.json")
+.then(r=>r.json())
+.then(data=>{
+
+data.features.forEach(f=>{
+
+const lat=f.geometry.coordinates[1]
+const lon=f.geometry.coordinates[0]
+
+const type=f.properties.type
+const text=f.properties.title
+
+if(type==="construction"){
+addMarker(constructionLayer,lat,lon,"🚧",text)
+}
+
+else if(type==="accident"){
+addMarker(policeLayer,lat,lon,"🚓",text)
+}
+
+else if(type==="traffic"){
+addMarker(trafficLayer,lat,lon,"🚗",text)
+}
+
+else{
+addMarker(warningLayer,lat,lon,"⚠️",text)
+}
+
+})
+
+})
 
 
 // Layer zur Karte
@@ -113,4 +256,3 @@ L.control.layers(null, overlayMaps).addTo(map)
 
 </body>
 </html>
-```
