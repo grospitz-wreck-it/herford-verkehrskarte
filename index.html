@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="de">
-
 <head>
 
 <meta charset="utf-8">
@@ -10,22 +9,41 @@
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
 
 <style>
 
 body{
 margin:0;
-font-family:Arial, Helvetica, sans-serif;
-background:#f5f5f5;
+font-family:Arial;
+background:#f2f2f2;
 }
 
 .header{
-padding:12px 16px;
-background:white;
-border-bottom:2px solid #c4001a;
-font-weight:bold;
+padding:14px;
 font-size:18px;
+font-weight:bold;
+background:white;
+border-bottom:3px solid #c4001a;
+}
+
+.ticker{
+background:#111;
+color:white;
+padding:8px;
+font-size:14px;
+overflow:hidden;
+white-space:nowrap;
+}
+
+.ticker span{
+display:inline-block;
+padding-left:100%;
+animation:ticker 30s linear infinite;
+}
+
+@keyframes ticker{
+0%{transform:translateX(0)}
+100%{transform:translateX(-100%)}
 }
 
 #map{
@@ -34,21 +52,8 @@ width:100%;
 }
 
 .emoji-marker{
-font-size:32px;
+font-size:30px;
 text-align:center;
-line-height:32px;
-}
-
-@media(max-width:600px){
-
-.header{
-font-size:16px;
-}
-
-#map{
-height:88vh;
-}
-
 }
 
 </style>
@@ -61,6 +66,10 @@ height:88vh;
 Verkehrsinfos im Kreis Herford
 </div>
 
+<div class="ticker">
+<span id="tickerText">Lade Verkehrsmeldungen...</span>
+</div>
+
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -69,40 +78,34 @@ Verkehrsinfos im Kreis Herford
 
 <script>
 
-// Karte starten
-const map = L.map("map",{zoomControl:true})
-.setView([52.114,8.673],11)
+// Karte
+const map = L.map("map").setView([52.114,8.673],11)
 
-
-// Basiskarte
 L.tileLayer(
 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-{
-maxZoom:19,
-attribution:"© OpenStreetMap"
-}
+{ attribution:"© OpenStreetMap" }
 ).addTo(map)
 
 
-// Emoji Icons
-function emojiIcon(emoji){
-return L.divIcon({
-className:'emoji-marker',
-html:emoji,
-iconSize:[36,36],
-iconAnchor:[18,18]
-})
-}
-
-
 // Cluster Layer
-const constructionLayer = L.markerClusterGroup()
-const accidentLayer = L.markerClusterGroup()
-const warningLayer = L.markerClusterGroup()
-const trafficLayer = L.markerClusterGroup()
+const constructionLayer=L.markerClusterGroup()
+const accidentLayer=L.markerClusterGroup()
+const warningLayer=L.markerClusterGroup()
 
+constructionLayer.addTo(map)
+accidentLayer.addTo(map)
+warningLayer.addTo(map)
 
 let kreisFeature
+
+// Emoji Icons
+function emojiIcon(e){
+return L.divIcon({
+className:'emoji-marker',
+html:e,
+iconSize:[30,30]
+})
+}
 
 
 // Kreis laden
@@ -112,8 +115,6 @@ fetch("data/kreis-herford.geojson")
 
 kreisFeature=data.features[0]
 
-
-// Kreis anzeigen
 L.geoJSON(data,{
 style:{
 color:"#c4001a",
@@ -122,8 +123,20 @@ fill:false
 }
 }).addTo(map)
 
+map.fitBounds(L.geoJSON(data).getBounds())
 
-// Maske erstellen
+createMask()
+
+loadTraffic()
+
+loadOSMConstruction()
+
+})
+
+
+// dunkle Maske
+function createMask(){
+
 const world=turf.bboxPolygon([-180,-90,180,90])
 const mask=turf.difference(world,kreisFeature)
 
@@ -135,19 +148,15 @@ stroke:false
 }
 }).addTo(map)
 
-
-// Verkehr laden
-loadTraffic()
-
-})
+}
 
 
-// prüfen ob Punkt im Kreis
+// Punkt im Kreis prüfen
 function insideKreis(lat,lon){
 
-const point=turf.point([lon,lat])
+const pt=turf.point([lon,lat])
 
-return turf.booleanPointInPolygon(point,kreisFeature)
+return turf.booleanPointInPolygon(pt,kreisFeature)
 
 }
 
@@ -157,67 +166,112 @@ function addMarker(layer,lat,lon,emoji,text){
 
 if(!insideKreis(lat,lon)) return
 
-const marker=L.marker([lat,lon],{
+const m=L.marker([lat,lon],{
 icon:emojiIcon(emoji)
 })
 
-marker.bindPopup(text)
+m.bindPopup(text)
 
-layer.addLayer(marker)
+layer.addLayer(m)
 
 }
 
 
-// Verkehrsdaten laden
+// Verkehrsdaten (dein JSON)
 function loadTraffic(){
 
 fetch("data/traffic.json")
 .then(r=>r.json())
 .then(data=>{
 
+let ticker=[]
+
 data.features.forEach(f=>{
 
 const lat=f.geometry.coordinates[1]
 const lon=f.geometry.coordinates[0]
 
-const type=f.properties.type
 const text=f.properties.title
+const type=f.properties.type
 
+ticker.push(text)
 
-if(type==="construction")
-addMarker(constructionLayer,lat,lon,"🚧",text)
-
-else if(type==="accident")
+if(type==="accident")
 addMarker(accidentLayer,lat,lon,"🚓",text)
-
-else if(type==="traffic")
-addMarker(trafficLayer,lat,lon,"🚗",text)
 
 else
 addMarker(warningLayer,lat,lon,"⚠️",text)
 
 })
 
+document.getElementById("tickerText").innerText=ticker.join(" • ")
+
 })
 
 }
 
 
-// Layer anzeigen
-constructionLayer.addTo(map)
-accidentLayer.addTo(map)
-warningLayer.addTo(map)
-trafficLayer.addTo(map)
+// OSM Baustellen laden
+function loadOSMConstruction(){
 
+const query=`
 
-const overlays={
-"🚧 Baustellen":constructionLayer,
-"🚓 Unfälle":accidentLayer,
-"⚠️ Gefahren":warningLayer,
-"🚗 Verkehr":trafficLayer
+[out:json][timeout:25];
+
+(
+
+way["highway"="construction"](52.0,8.3,52.3,9.0);
+
+node["highway"="construction"](52.0,8.3,52.3,9.0);
+
+);
+
+out center;
+
+`
+
+fetch("https://overpass-api.de/api/interpreter",{
+method:"POST",
+body:query
+})
+.then(r=>r.json())
+.then(data=>{
+
+data.elements.forEach(el=>{
+
+let lat,lon
+
+if(el.lat){
+lat=el.lat
+lon=el.lon
 }
 
-L.control.layers(null,overlays).addTo(map)
+if(el.center){
+lat=el.center.lat
+lon=el.center.lon
+}
+
+addMarker(
+constructionLayer,
+lat,
+lon,
+"🚧",
+"Baustelle (OpenStreetMap)"
+)
+
+})
+
+})
+
+}
+
+
+// Layer Switch
+L.control.layers(null,{
+"🚧 Baustellen":constructionLayer,
+"🚓 Unfälle":accidentLayer,
+"⚠️ Gefahren":warningLayer
+}).addTo(map)
 
 </script>
 
