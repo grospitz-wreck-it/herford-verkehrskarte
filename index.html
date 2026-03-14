@@ -115,7 +115,7 @@ attribution:"© OpenStreetMap"
 ).addTo(map)
 
 
-// Emoji Icon Generator
+// Emoji Marker Generator
 function emojiIcon(emoji){
 return L.divIcon({
 className:'emoji-marker',
@@ -126,15 +126,14 @@ iconAnchor:[18,18]
 }
 
 
-// Markercluster Layer
+// Cluster Layer
 const policeLayer = L.markerClusterGroup()
 const constructionLayer = L.markerClusterGroup()
 const warningLayer = L.markerClusterGroup()
 const trafficLayer = L.markerClusterGroup()
 
 
-// Marker hinzufügen
-function addMarker(layer, lat, lon, emoji, text){
+function addMarker(layer,lat,lon,emoji,text){
 
 const marker = L.marker([lat,lon],{
 icon:emojiIcon(emoji)
@@ -148,14 +147,11 @@ layer.addLayer(marker)
 
 
 // Kreis laden
-let kreisGeo
-
 fetch("data/kreis-herford.geojson")
 .then(r=>r.json())
 .then(data=>{
 
-kreisGeo=data
-
+// Kreisgrenze
 const kreisLayer=L.geoJSON(data,{
 style:{
 color:"#c4001a",
@@ -167,33 +163,34 @@ fill:false
 map.fitBounds(kreisLayer.getBounds())
 
 
-// Maske außerhalb Kreis
-const world={
-"type":"Feature",
-"geometry":{
-"type":"Polygon",
-"coordinates":[[
+// Weltpolygon
+const world = [
 [-180,-90],
 [-180,90],
 [180,90],
 [180,-90],
 [-180,-90]
-]]
-}
-}
-
-const mask={
-"type":"FeatureCollection",
-"features":[
-world,
-data.features[0]
 ]
+
+// Kreis Koordinaten
+const hole = data.features[0].geometry.coordinates[0]
+
+// Maske (außen dunkel)
+const mask = {
+"type":"Feature",
+"geometry":{
+"type":"Polygon",
+"coordinates":[
+world,
+hole
+]
+}
 }
 
 L.geoJSON(mask,{
 style:{
 fillColor:"#000",
-fillOpacity:0.35,
+fillOpacity:0.55,
 stroke:false
 }
 }).addTo(map)
@@ -235,7 +232,7 @@ addMarker(warningLayer,lat,lon,"⚠️",text)
 })
 
 
-// Layer zur Karte
+// Layer anzeigen
 policeLayer.addTo(map)
 constructionLayer.addTo(map)
 warningLayer.addTo(map)
