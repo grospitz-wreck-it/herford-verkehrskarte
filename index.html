@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="de">
-
 <head>
 
 <meta charset="utf-8">
@@ -8,252 +7,39 @@
 
 <title>Verkehrsinfos im Kreis Herford</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
-<style>
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
 
-body{
-margin:0;
-font-family:Arial,Helvetica,sans-serif;
-background:#f4f4f4;
-}
-
-.header{
-background:white;
-border-bottom:3px solid #c4001a;
-padding:14px;
-font-size:18px;
-font-weight:bold;
-}
-
-.ticker{
-background:#111;
-color:white;
-padding:8px;
-font-size:14px;
-overflow:hidden;
-white-space:nowrap;
-}
-
-.ticker span{
-display:inline-block;
-padding-left:100%;
-animation:ticker 40s linear infinite;
-}
-
-@keyframes ticker{
-0%{transform:translateX(0)}
-100%{transform:translateX(-100%)}
-}
-
-#map{
-height:84vh;
-width:100%;
-}
-
-.emoji-marker{
-font-size:28px;
-text-align:center;
-}
-
-</style>
+<link rel="stylesheet" href="css/style.css">
 
 </head>
 
 <body>
 
-<div class="header">
+<header class="header">
+
+<div class="title">
 Verkehrsinfos im Kreis Herford
 </div>
 
+</header>
+
 <div class="ticker">
-<span id="ticker">Lade Meldungen...</span>
+<span id="ticker">Lade Polizeimeldungen...</span>
 </div>
 
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
 
-<script>
-
-const map=L.map("map").setView([52.114,8.673],11)
-
-L.tileLayer(
-"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-{ attribution:"© OpenStreetMap" }
-).addTo(map)
-
-const constructionLayer=L.markerClusterGroup()
-const accidentLayer=L.markerClusterGroup()
-const warningLayer=L.markerClusterGroup()
-
-map.addLayer(constructionLayer)
-map.addLayer(accidentLayer)
-map.addLayer(warningLayer)
-
-let kreis
-
-function icon(e){
-
-return L.divIcon({
-className:"emoji-marker",
-html:e,
-iconSize:[28,28]
-})
-
-}
-
-fetch("data/kreis-herford.geojson")
-.then(r=>r.json())
-.then(data=>{
-
-kreis=data.features[0]
-
-const border=L.geoJSON(data,{
-style:{color:"#c4001a",weight:3}
-}).addTo(map)
-
-map.fitBounds(border.getBounds())
-
-loadTraffic()
-
-loadOSM()
-
-loadPolice()
-
-})
-
-function inside(lat,lon){
-
-const pt=turf.point([lon,lat])
-
-return turf.booleanPointInPolygon(pt,kreis)
-
-}
-
-function add(layer,lat,lon,emoji,text){
-
-if(!inside(lat,lon)) return
-
-const m=L.marker([lat,lon],{
-icon:icon(emoji)
-})
-
-m.bindPopup(text)
-
-layer.addLayer(m)
-
-}
-
-function loadTraffic(){
-
-fetch("data/traffic.json")
-.then(r=>r.json())
-.then(data=>{
-
-data.features.forEach(f=>{
-
-const lat=f.geometry.coordinates[1]
-const lon=f.geometry.coordinates[0]
-
-const text=f.properties.title
-const type=f.properties.type
-
-if(type==="construction")
-add(constructionLayer,lat,lon,"🚧",text)
-
-else if(type==="accident")
-add(accidentLayer,lat,lon,"🚓",text)
-
-else
-add(warningLayer,lat,lon,"⚠️",text)
-
-})
-
-})
-
-}
-
-function loadPolice(){
-
-fetch("data/police.json")
-.then(r=>r.json())
-.then(data=>{
-
-let list=[]
-
-data.forEach(p=>{
-
-list.push("🚓 "+p.title)
-
-})
-
-document.getElementById("ticker").innerText=list.join(" • ")
-
-})
-
-}
-
-function loadOSM(){
-
-const query=`
-
-[out:json];
-
-(
-node["highway"="construction"](52.05,8.45,52.25,8.85);
-way["highway"="construction"](52.05,8.45,52.25,8.85);
-);
-
-out center;
-
-`
-
-fetch("https://overpass-api.de/api/interpreter",{
-method:"POST",
-body:query
-})
-.then(r=>r.json())
-.then(data=>{
-
-data.elements.forEach(el=>{
-
-let lat,lon
-
-if(el.lat){
-lat=el.lat
-lon=el.lon
-}
-
-if(el.center){
-lat=el.center.lat
-lon=el.center.lon
-}
-
-add(
-constructionLayer,
-lat,
-lon,
-"🚧",
-"Baustelle (OSM)"
-)
-
-})
-
-})
-
-}
-
-L.control.layers(null,{
-"🚧 Baustellen":constructionLayer,
-"🚓 Unfälle":accidentLayer,
-"⚠️ Gefahren":warningLayer
-}).addTo(map)
-
-</script>
+<script src="js/map.js"></script>
+<script src="js/traffic.js"></script>
+<script src="js/nrw_baustellen.js"></script>
+<script src="js/police_ticker.js"></script>
 
 </body>
 </html>
