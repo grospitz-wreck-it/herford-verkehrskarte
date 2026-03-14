@@ -9,7 +9,7 @@ items = []
 
 for entry in d.entries:
 
-    if "Herford" in entry.title or "Bünde" in entry.title:
+    if "Herford" in entry.title or "Bünde" or "Löhne" or "Hiddenhausen" or "Kirchlengern" or "Rödinghausen" or "Vlotho" in entry.title:
         items.append({
             "title": entry.title
         })
