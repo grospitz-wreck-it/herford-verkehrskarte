@@ -19,11 +19,11 @@ jobs:
         with:
           python-version: "3.11"
 
-      - run: pip install feedparser requests
-
-      - run: python scripts/build_police.py
+      - run: pip install requests feedparser
 
       - run: python scripts/build_traffic.py
+
+      - run: python scripts/build_police.py
 
       - run: |
           git config --global user.name "github-actions"
