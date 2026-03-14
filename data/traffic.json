@@ -1,18 +1,27 @@
 {
 "type":"FeatureCollection",
 "features":[
-
 {
 "type":"Feature",
-"geometry":{"type":"Point","coordinates":[8.673,52.114]},
-"properties":{"title":"Baustelle Herford Innenstadt","type":"construction"}
+"geometry":{
+"type":"Point",
+"coordinates":[8.673,52.114]
 },
-
+"properties":{
+"title":"Baustelle Herford Innenstadt",
+"type":"construction"
+}
+},
 {
 "type":"Feature",
-"geometry":{"type":"Point","coordinates":[8.588,52.201]},
-"properties":{"title":"Unfall A30 Bünde","type":"accident"}
+"geometry":{
+"type":"Point",
+"coordinates":[8.588,52.201]
+},
+"properties":{
+"title":"Unfall A30 bei Bünde",
+"type":"accident"
 }
-
+}
 ]
 }
