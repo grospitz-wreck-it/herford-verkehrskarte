@@ -1,26 +1,24 @@
+async function loadNRWBaustellen(){
 
-async function loadBaustellen(){
+const url="https://www.mobilitaetsdaten.nrw/api/traffic/baustellen"
 
-try{
+const r=await fetch(url)
+const data=await r.json()
 
-const response = await fetch(
-"https://baustellen.strassen.nrw/api"
-);
+data.features.forEach(f=>{
 
-const data = await response.json();
+const lat=f.geometry.coordinates[1]
+const lon=f.geometry.coordinates[0]
 
-L.geoJSON(data,{
-style:{
-color:"orange"
-}
-}).addTo(map);
+addMarker(
+lat,
+lon,
+"🚧",
+f.properties.description || "Baustelle NRW"
+)
 
-}catch(e){
-
-console.log("Baustellen konnten nicht geladen werden");
-
-}
+})
 
 }
 
-loadBaustellen();
+loadNRWBaustellen()
