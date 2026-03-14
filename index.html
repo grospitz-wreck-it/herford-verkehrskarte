@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
 
 <meta charset="utf-8">
@@ -7,15 +8,15 @@
 
 <title>Verkehrsinfos im Kreis Herford</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
 
 <style>
 
 body{
 margin:0;
 font-family:Arial,Helvetica,sans-serif;
-background:#f5f5f5;
+background:#f4f4f4;
 }
 
 .header{
@@ -38,7 +39,7 @@ white-space:nowrap;
 .ticker span{
 display:inline-block;
 padding-left:100%;
-animation:ticker 35s linear infinite;
+animation:ticker 40s linear infinite;
 }
 
 @keyframes ticker{
@@ -52,7 +53,7 @@ width:100%;
 }
 
 .emoji-marker{
-font-size:30px;
+font-size:28px;
 text-align:center;
 }
 
@@ -67,7 +68,7 @@ Verkehrsinfos im Kreis Herford
 </div>
 
 <div class="ticker">
-<span id="tickerText">Lade aktuelle Verkehrsmeldungen…</span>
+<span id="ticker">Lade Meldungen...</span>
 </div>
 
 <div id="map"></div>
@@ -78,16 +79,13 @@ Verkehrsinfos im Kreis Herford
 
 <script>
 
-// Karte starten
-const map = L.map("map").setView([52.114,8.673],11)
+const map=L.map("map").setView([52.114,8.673],11)
 
 L.tileLayer(
 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
 { attribution:"© OpenStreetMap" }
 ).addTo(map)
 
-
-// Cluster Layer
 const constructionLayer=L.markerClusterGroup()
 const accidentLayer=L.markerClusterGroup()
 const warningLayer=L.markerClusterGroup()
@@ -98,20 +96,16 @@ map.addLayer(warningLayer)
 
 let kreis
 
-
-function emojiIcon(e){
+function icon(e){
 
 return L.divIcon({
 className:"emoji-marker",
 html:e,
-iconSize:[30,30],
-iconAnchor:[15,15]
+iconSize:[28,28]
 })
 
 }
 
-
-// Kreis laden
 fetch("data/kreis-herford.geojson")
 .then(r=>r.json())
 .then(data=>{
@@ -119,11 +113,7 @@ fetch("data/kreis-herford.geojson")
 kreis=data.features[0]
 
 const border=L.geoJSON(data,{
-style:{
-color:"#c4001a",
-weight:3,
-fill:false
-}
+style:{color:"#c4001a",weight:3}
 }).addTo(map)
 
 map.fitBounds(border.getBounds())
@@ -132,12 +122,11 @@ loadTraffic()
 
 loadOSM()
 
+loadPolice()
+
 })
 
-
-
-// prüfen ob Punkt im Kreis
-function insideKreis(lat,lon){
+function inside(lat,lon){
 
 const pt=turf.point([lon,lat])
 
@@ -145,33 +134,25 @@ return turf.booleanPointInPolygon(pt,kreis)
 
 }
 
+function add(layer,lat,lon,emoji,text){
 
+if(!inside(lat,lon)) return
 
-// Marker hinzufügen
-function addMarker(layer,lat,lon,emoji,text){
-
-if(!insideKreis(lat,lon)) return
-
-const marker=L.marker([lat,lon],{
-icon:emojiIcon(emoji)
+const m=L.marker([lat,lon],{
+icon:icon(emoji)
 })
 
-marker.bindPopup(text)
+m.bindPopup(text)
 
-layer.addLayer(marker)
+layer.addLayer(m)
 
 }
 
-
-
-// eigene Verkehrsdaten
 function loadTraffic(){
 
 fetch("data/traffic.json")
 .then(r=>r.json())
 .then(data=>{
-
-let ticker=[]
 
 data.features.forEach(f=>{
 
@@ -181,33 +162,46 @@ const lon=f.geometry.coordinates[0]
 const text=f.properties.title
 const type=f.properties.type
 
-ticker.push(text)
-
 if(type==="construction")
-addMarker(constructionLayer,lat,lon,"🚧",text)
+add(constructionLayer,lat,lon,"🚧",text)
 
 else if(type==="accident")
-addMarker(accidentLayer,lat,lon,"🚓",text)
+add(accidentLayer,lat,lon,"🚓",text)
 
 else
-addMarker(warningLayer,lat,lon,"⚠️",text)
+add(warningLayer,lat,lon,"⚠️",text)
 
 })
-
-document.getElementById("tickerText").innerText=ticker.join(" • ")
 
 })
 
 }
 
+function loadPolice(){
 
+fetch("data/police.json")
+.then(r=>r.json())
+.then(data=>{
 
-// OSM Baustellen
+let list=[]
+
+data.forEach(p=>{
+
+list.push("🚓 "+p.title)
+
+})
+
+document.getElementById("ticker").innerText=list.join(" • ")
+
+})
+
+}
+
 function loadOSM(){
 
 const query=`
 
-[out:json][timeout:25];
+[out:json];
 
 (
 node["highway"="construction"](52.05,8.45,52.25,8.85);
@@ -239,12 +233,12 @@ lat=el.center.lat
 lon=el.center.lon
 }
 
-addMarker(
+add(
 constructionLayer,
 lat,
 lon,
 "🚧",
-"Baustelle (OpenStreetMap)"
+"Baustelle (OSM)"
 )
 
 })
@@ -253,9 +247,6 @@ lon,
 
 }
 
-
-
-// Layer Control
 L.control.layers(null,{
 "🚧 Baustellen":constructionLayer,
 "🚓 Unfälle":accidentLayer,
