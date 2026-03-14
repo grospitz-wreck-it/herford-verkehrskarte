@@ -16,30 +16,20 @@
 
 body{
 margin:0;
-font-family:Arial,Helvetica,sans-serif;
+font-family:Arial, Helvetica, sans-serif;
 background:#f5f5f5;
 }
 
 .header{
-display:flex;
-justify-content:space-between;
-align-items:center;
 padding:12px 16px;
 background:white;
 border-bottom:2px solid #c4001a;
-}
-
-.header h1{
+font-weight:bold;
 font-size:18px;
-margin:0;
-}
-
-.logo img{
-height:32px;
 }
 
 #map{
-height:80vh;
+height:82vh;
 width:100%;
 }
 
@@ -49,6 +39,18 @@ text-align:center;
 line-height:32px;
 }
 
+@media(max-width:600px){
+
+.header{
+font-size:16px;
+}
+
+#map{
+height:88vh;
+}
+
+}
+
 </style>
 
 </head>
@@ -56,31 +58,33 @@ line-height:32px;
 <body>
 
 <div class="header">
-
-<h1>Verkehrsinfos im Kreis Herford</h1>
-
-<div class="logo">
-<img src="https://www.nw.de/_em_daten/locals/module/nw/_includes/twig/current/public/images/nw-logo-wortmarke.svg">
-</div>
-
+Verkehrsinfos im Kreis Herford
 </div>
 
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
 
 <script>
 
-const map = L.map("map").setView([52.114,8.673],11)
+// Karte starten
+const map = L.map("map",{zoomControl:true})
+.setView([52.114,8.673],11)
 
+
+// Basiskarte
 L.tileLayer(
 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-{ attribution:"© OpenStreetMap" }
+{
+maxZoom:19,
+attribution:"© OpenStreetMap"
+}
 ).addTo(map)
 
 
-// Emoji Marker
+// Emoji Icons
 function emojiIcon(emoji){
 return L.divIcon({
 className:'emoji-marker',
@@ -97,7 +101,8 @@ const accidentLayer = L.markerClusterGroup()
 const warningLayer = L.markerClusterGroup()
 const trafficLayer = L.markerClusterGroup()
 
-let kreisPolygon
+
+let kreisFeature
 
 
 // Kreis laden
@@ -105,7 +110,11 @@ fetch("data/kreis-herford.geojson")
 .then(r=>r.json())
 .then(data=>{
 
-kreisPolygon = L.geoJSON(data,{
+kreisFeature=data.features[0]
+
+
+// Kreis anzeigen
+L.geoJSON(data,{
 style:{
 color:"#c4001a",
 weight:3,
@@ -113,23 +122,10 @@ fill:false
 }
 }).addTo(map)
 
-map.fitBounds(kreisPolygon.getBounds())
 
-
-// MASKE (außen dunkel)
-const world = turf.polygon([[
-
-[-180,-90],
-[-180,90],
-[180,90],
-[180,-90],
-[-180,-90]
-
-]])
-
-const kreis = data.features[0]
-
-const mask = turf.difference(world, kreis)
+// Maske erstellen
+const world=turf.bboxPolygon([-180,-90,180,90])
+const mask=turf.difference(world,kreisFeature)
 
 L.geoJSON(mask,{
 style:{
@@ -146,18 +142,12 @@ loadTraffic()
 })
 
 
-// prüfen ob Punkt im Kreis liegt
-function insideKreis(lat,lng){
+// prüfen ob Punkt im Kreis
+function insideKreis(lat,lon){
 
-let inside=false
+const point=turf.point([lon,lat])
 
-kreisPolygon.eachLayer(layer=>{
-
-if(layer.getBounds().contains([lat,lng])) inside=true
-
-})
-
-return inside
+return turf.booleanPointInPolygon(point,kreisFeature)
 
 }
 
@@ -178,7 +168,7 @@ layer.addLayer(marker)
 }
 
 
-// Verkehrsdaten
+// Verkehrsdaten laden
 function loadTraffic(){
 
 fetch("data/traffic.json")
@@ -192,6 +182,7 @@ const lon=f.geometry.coordinates[0]
 
 const type=f.properties.type
 const text=f.properties.title
+
 
 if(type==="construction")
 addMarker(constructionLayer,lat,lon,"🚧",text)
@@ -219,14 +210,14 @@ warningLayer.addTo(map)
 trafficLayer.addTo(map)
 
 
-const overlayMaps={
+const overlays={
 "🚧 Baustellen":constructionLayer,
 "🚓 Unfälle":accidentLayer,
 "⚠️ Gefahren":warningLayer,
 "🚗 Verkehr":trafficLayer
 }
 
-L.control.layers(null,overlayMaps).addTo(map)
+L.control.layers(null,overlays).addTo(map)
 
 </script>
 
