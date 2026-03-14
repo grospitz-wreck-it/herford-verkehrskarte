@@ -1,85 +1,116 @@
+```html
 <!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<title>Emoji Verkehrskarte</title>
+<title>Verkehrskarte</title>
 
-<link
- rel="stylesheet"
- href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
 
 <style>
 
-html, body {
-  margin:0;
-  padding:0;
+html,body{
+margin:0;
+padding:0;
 }
 
-#map {
-  height:100vh;
+#map{
+height:100vh;
+width:100%;
 }
 
-.emoji-marker {
-  font-size:32px;
-  text-align:center;
+.emoji-marker{
+font-size:34px;
+text-align:center;
+line-height:34px;
 }
 
 </style>
-</head>
 
+</head>
 <body>
 
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
 <script>
 
 // Karte starten
-const map = L.map('map').setView([52.52, 13.405], 12)
+const map = L.map('map').setView([52.52,13.405],12)
 
 // Basiskarte
 L.tileLayer(
-  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-  {
-    attribution:'© OpenStreetMap'
-  }
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{ attribution:'© OpenStreetMap' }
 ).addTo(map)
 
 
-// Emoji Marker Funktion
-function emojiMarker(emoji) {
+// Emoji Icon Generator
+function emojiIcon(emoji){
+return L.divIcon({
+className:'emoji-marker',
+html:emoji,
+iconSize:[36,36],
+iconAnchor:[18,18]
+})
+}
 
-  return L.divIcon({
-    className:'emoji-marker',
-    html:emoji,
-    iconSize:[30,30],
-    iconAnchor:[15,15]
-  })
+
+// Layer Gruppen
+const policeLayer = L.markerClusterGroup()
+const constructionLayer = L.markerClusterGroup()
+const warningLayer = L.markerClusterGroup()
+const trafficLayer = L.markerClusterGroup()
+
+
+// Marker hinzufügen
+function addMarker(layer, lat, lon, emoji, text){
+
+const marker = L.marker([lat,lon],{
+icon:emojiIcon(emoji)
+})
+
+marker.bindPopup(text)
+
+layer.addLayer(marker)
 
 }
 
 
-// Marker setzen
+// Beispiel Daten
+addMarker(policeLayer,52.52,13.405,"🚓","Polizei")
+addMarker(policeLayer,52.518,13.39,"🚓","Polizeikontrolle")
 
-L.marker([52.52,13.405], {icon:emojiMarker("🚓")})
-  .addTo(map)
-  .bindPopup("Polizei")
+addMarker(constructionLayer,52.525,13.41,"🚧","Baustelle")
 
-L.marker([52.525,13.39], {icon:emojiMarker("🚧")})
-  .addTo(map)
-  .bindPopup("Baustelle")
+addMarker(warningLayer,52.517,13.43,"⚠️","Gefahrstelle")
 
-L.marker([52.515,13.41], {icon:emojiMarker("⚠️")})
-  .addTo(map)
-  .bindPopup("Gefahr")
+addMarker(trafficLayer,52.53,13.42,"🚗","Stau")
 
-L.marker([52.53,13.42], {icon:emojiMarker("🚗")})
-  .addTo(map)
-  .bindPopup("Stau")
+
+// Layer zur Karte
+policeLayer.addTo(map)
+constructionLayer.addTo(map)
+warningLayer.addTo(map)
+trafficLayer.addTo(map)
+
+
+// Layer Control
+const overlayMaps = {
+"🚓 Polizei": policeLayer,
+"🚧 Baustellen": constructionLayer,
+"⚠️ Gefahren": warningLayer,
+"🚗 Stau": trafficLayer
+}
+
+L.control.layers(null, overlayMaps).addTo(map)
 
 </script>
 
 </body>
 </html>
+```
