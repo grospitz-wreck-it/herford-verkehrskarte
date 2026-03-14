@@ -1,42 +1,19 @@
-let trafficLayer;
-
 async function loadTraffic(){
 
-if(trafficLayer){
-map.removeLayer(trafficLayer);
-}
+const r=await fetch("data/traffic.json")
+const data=await r.json()
 
-const res=await fetch("data/traffic.geojson");
-const data=await res.json();
+data.features.forEach(f=>{
 
-trafficLayer=L.geoJSON(data,{
+addMarker(
+f.geometry.coordinates[1],
+f.geometry.coordinates[0],
+"⚠️",
+f.properties.title
+)
 
-pointToLayer:function(feature,latlng){
-
-let icon=icons.gefahr;
-
-if(feature.properties.type==="baustelle"){
-icon=icons.baustelle;
-}
-
-if(feature.properties.type==="unfall"){
-icon=icons.unfall;
-}
-
-return L.marker(latlng,{icon:icon});
-
-},
-
-onEachFeature:function(feature,layer){
-
-layer.bindPopup("<b>"+feature.properties.title+"</b>")
+})
 
 }
 
-}).addTo(map);
-
-}
-
-loadTraffic();
-
-setInterval(loadTraffic,120000);
+loadTraffic()
