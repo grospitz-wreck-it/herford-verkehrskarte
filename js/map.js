@@ -1,9 +1,10 @@
-const map = L.map("map",{zoomControl:true})
-.setView([52.114,8.673],11)
+const map = L.map("map").setView([52.114,8.673],11)
 
 L.tileLayer(
 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-{ attribution:"© OpenStreetMap" }
+{
+attribution:"© OpenStreetMap"
+}
 ).addTo(map)
 
 const cluster = L.markerClusterGroup()
