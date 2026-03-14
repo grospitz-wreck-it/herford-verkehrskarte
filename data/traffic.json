@@ -4,38 +4,14 @@
 
 {
 "type":"Feature",
-"geometry":{
-"type":"Point",
-"coordinates":[8.673,52.114]
-},
-"properties":{
-"title":"Baustelle Herford Innenstadt",
-"type":"construction"
-}
+"geometry":{"type":"Point","coordinates":[8.673,52.114]},
+"properties":{"title":"Baustelle Herford Innenstadt","type":"construction"}
 },
 
 {
 "type":"Feature",
-"geometry":{
-"type":"Point",
-"coordinates":[8.588,52.201]
-},
-"properties":{
-"title":"Unfall A30 bei Bünde",
-"type":"accident"
-}
-},
-
-{
-"type":"Feature",
-"geometry":{
-"type":"Point",
-"coordinates":[8.716,52.186]
-},
-"properties":{
-"title":"Gefahrstelle Bad Oeynhausen",
-"type":"warning"
-}
+"geometry":{"type":"Point","coordinates":[8.588,52.201]},
+"properties":{"title":"Unfall A30 Bünde","type":"accident"}
 }
 
 ]
