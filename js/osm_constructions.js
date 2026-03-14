@@ -13,14 +13,12 @@ out center;
 
 `
 
-const r = await fetch(
+const r=await fetch(
 "https://overpass-api.de/api/interpreter",
-{
-method:"POST",
-body:query
-})
+{method:"POST",body:query}
+)
 
-const data = await r.json()
+const data=await r.json()
 
 data.elements.forEach(el=>{
 
@@ -32,12 +30,7 @@ lat=el.center.lat
 lon=el.center.lon
 }
 
-addMarker(
-lat,
-lon,
-"🚧",
-"Baustelle (OpenStreetMap)"
-)
+addMarker(lat,lon,"🚧","Baustelle")
 
 })
 
