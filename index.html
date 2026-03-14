@@ -1,142 +1,83 @@
 <!DOCTYPE html>
 <html lang="de">
-
 <head>
-
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Emoji Verkehrskarte</title>
 
-<title>Verkehrsinfos im Kreis Herford</title>
-
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link
+ rel="stylesheet"
+ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
 
 <style>
 
-body{
-margin:0;
-font-family:Arial, Helvetica, sans-serif;
-background:#f5f5f5;
+html, body {
+  margin:0;
+  padding:0;
 }
 
-.header{
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:12px 16px;
-background:white;
-border-bottom:2px solid #c4001a;
+#map {
+  height:100vh;
 }
 
-.header h1{
-font-size:18px;
-margin:0;
-}
-
-.logo img{
-height:32px;
-}
-
-.container{
-padding:10px;
-}
-
-.mapbox{
-background:white;
-border-radius:8px;
-overflow:hidden;
-box-shadow:0 2px 6px rgba(0,0,0,0.15);
-}
-
-#map{
-height:70vh;
-min-height:420px;
-}
-
-.leaflet-control-zoom a{
-font-size:20px;
-}
-
-@media(max-width:600px){
-
-.header h1{
-font-size:16px;
-}
-
-#map{
-height:75vh;
-}
-
+.emoji-marker {
+  font-size:32px;
+  text-align:center;
 }
 
 </style>
-
 </head>
 
 <body>
 
-<div class="header">
-
-<h1>Verkehrsinfos im Kreis Herford</h1>
-
-<div class="logo">
-<img src="https://www.nw.de/_em_daten/locals/module/nw/_includes/twig/current/public/images/nw-logo-wortmarke.svg">
-</div>
-
-</div>
-
-<div class="container">
-
-<div class="mapbox">
 <div id="map"></div>
-</div>
-
-</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 
-var map=L.map("map",{zoomControl:true})
-.setView([52.114,8.673],11);
+// Karte starten
+const map = L.map('map').setView([52.52, 13.405], 12)
 
+// Basiskarte
 L.tileLayer(
-"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-{
-maxZoom:19,
-attribution:"© OpenStreetMap"
-}
-).addTo(map);
+  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {
+    attribution:'© OpenStreetMap'
+  }
+).addTo(map)
 
 
-// Verkehrsmarker laden
+// Emoji Marker Funktion
+function emojiMarker(emoji) {
 
-fetch("data/traffic.json")
-.then(r=>r.json())
-.then(data=>{
-
-L.geoJSON(data,{
-
-pointToLayer:function(feature,latlng){
-
-return L.circleMarker(latlng,{
-radius:7,
-color:"#c4001a",
-fillColor:"#c4001a",
-fillOpacity:1
-});
-
-},
-
-onEachFeature:function(feature,layer){
-
-layer.bindPopup(feature.properties.title);
+  return L.divIcon({
+    className:'emoji-marker',
+    html:emoji,
+    iconSize:[30,30],
+    iconAnchor:[15,15]
+  })
 
 }
 
-}).addTo(map);
 
-});
+// Marker setzen
+
+L.marker([52.52,13.405], {icon:emojiMarker("🚓")})
+  .addTo(map)
+  .bindPopup("Polizei")
+
+L.marker([52.525,13.39], {icon:emojiMarker("🚧")})
+  .addTo(map)
+  .bindPopup("Baustelle")
+
+L.marker([52.515,13.41], {icon:emojiMarker("⚠️")})
+  .addTo(map)
+  .bindPopup("Gefahr")
+
+L.marker([52.53,13.42], {icon:emojiMarker("🚗")})
+  .addTo(map)
+  .bindPopup("Stau")
 
 </script>
 
