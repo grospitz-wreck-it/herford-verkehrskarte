@@ -1,4 +1,4 @@
-name: Update traffic data
+name: Update traffic
 
 on:
   schedule:
@@ -19,13 +19,15 @@ jobs:
         with:
           python-version: "3.11"
 
-      - run: pip install feedparser
+      - run: pip install feedparser requests
 
-      - run: python scripts/update_police.py
+      - run: python scripts/build_police.py
+
+      - run: python scripts/build_traffic.py
 
       - run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
-          git add data/police.json
-          git commit -m "update police feed" || echo "no change"
+          git add data/*.json
+          git commit -m "update traffic data" || echo "no change"
           git push
