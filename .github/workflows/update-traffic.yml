@@ -13,20 +13,26 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.10
+          python-version: "3.11"
 
-      - name: Run script
-        run: python scripts/build_traffic.py
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
 
-      - name: Commit changes
+      - name: Run traffic script
+        run: |
+          python scripts/build_traffic.py
+
+      - name: Commit updated traffic data
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
           git add data/traffic.json
-          git commit -m "update traffic" || echo "no changes"
+          git commit -m "update traffic data" || echo "No changes"
           git push
