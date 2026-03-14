@@ -7,14 +7,14 @@
 
 <title>Verkehrsinfos im Kreis Herford</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
 
 <style>
 
 body{
 margin:0;
-font-family:Arial, Helvetica, sans-serif;
+font-family:Arial,Helvetica,sans-serif;
 background:#f5f5f5;
 }
 
@@ -22,8 +22,8 @@ background:#f5f5f5;
 background:white;
 border-bottom:3px solid #c4001a;
 padding:14px;
-font-weight:bold;
 font-size:18px;
+font-weight:bold;
 }
 
 .ticker{
@@ -38,7 +38,7 @@ white-space:nowrap;
 .ticker span{
 display:inline-block;
 padding-left:100%;
-animation:ticker 30s linear infinite;
+animation:ticker 35s linear infinite;
 }
 
 @keyframes ticker{
@@ -47,7 +47,7 @@ animation:ticker 30s linear infinite;
 }
 
 #map{
-height:82vh;
+height:84vh;
 width:100%;
 }
 
@@ -67,7 +67,7 @@ Verkehrsinfos im Kreis Herford
 </div>
 
 <div class="ticker">
-<span id="ticker">Lade Verkehrsmeldungen…</span>
+<span id="tickerText">Lade aktuelle Verkehrsmeldungen…</span>
 </div>
 
 <div id="map"></div>
@@ -78,13 +78,16 @@ Verkehrsinfos im Kreis Herford
 
 <script>
 
-const map=L.map("map").setView([52.114,8.673],11)
+// Karte starten
+const map = L.map("map").setView([52.114,8.673],11)
 
 L.tileLayer(
 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-{attribution:"© OpenStreetMap"}
+{ attribution:"© OpenStreetMap" }
 ).addTo(map)
 
+
+// Cluster Layer
 const constructionLayer=L.markerClusterGroup()
 const accidentLayer=L.markerClusterGroup()
 const warningLayer=L.markerClusterGroup()
@@ -93,7 +96,8 @@ map.addLayer(constructionLayer)
 map.addLayer(accidentLayer)
 map.addLayer(warningLayer)
 
-let kreisPolygon
+let kreis
+
 
 function emojiIcon(e){
 
@@ -106,22 +110,23 @@ iconAnchor:[15,15]
 
 }
 
+
+// Kreis laden
 fetch("data/kreis-herford.geojson")
 .then(r=>r.json())
 .then(data=>{
 
-kreisPolygon=data.features[0]
+kreis=data.features[0]
 
 const border=L.geoJSON(data,{
 style:{
 color:"#c4001a",
-weight:3
+weight:3,
+fill:false
 }
 }).addTo(map)
 
 map.fitBounds(border.getBounds())
-
-createMask(data)
 
 loadTraffic()
 
@@ -129,33 +134,20 @@ loadOSM()
 
 })
 
-function createMask(data){
 
-const outer=[
-[-90,-180],
-[-90,180],
-[90,180],
-[90,-180]
-]
 
-const coords=data.features[0].geometry.coordinates[0]
-
-L.polygon([outer,coords],{
-fillColor:"#000",
-fillOpacity:0.55,
-stroke:false
-}).addTo(map)
-
-}
-
+// prüfen ob Punkt im Kreis
 function insideKreis(lat,lon){
 
 const pt=turf.point([lon,lat])
 
-return turf.booleanPointInPolygon(pt,kreisPolygon)
+return turf.booleanPointInPolygon(pt,kreis)
 
 }
 
+
+
+// Marker hinzufügen
 function addMarker(layer,lat,lon,emoji,text){
 
 if(!insideKreis(lat,lon)) return
@@ -170,23 +162,26 @@ layer.addLayer(marker)
 
 }
 
+
+
+// eigene Verkehrsdaten
 function loadTraffic(){
 
 fetch("data/traffic.json")
 .then(r=>r.json())
 .then(data=>{
 
-let tickerText=[]
+let ticker=[]
 
 data.features.forEach(f=>{
 
 const lat=f.geometry.coordinates[1]
 const lon=f.geometry.coordinates[0]
 
-const type=f.properties.type
 const text=f.properties.title
+const type=f.properties.type
 
-tickerText.push(text)
+ticker.push(text)
 
 if(type==="construction")
 addMarker(constructionLayer,lat,lon,"🚧",text)
@@ -199,12 +194,15 @@ addMarker(warningLayer,lat,lon,"⚠️",text)
 
 })
 
-document.getElementById("ticker").innerText=tickerText.join(" • ")
+document.getElementById("tickerText").innerText=ticker.join(" • ")
 
 })
 
 }
 
+
+
+// OSM Baustellen
 function loadOSM(){
 
 const query=`
@@ -246,7 +244,7 @@ constructionLayer,
 lat,
 lon,
 "🚧",
-"Baustelle (OSM)"
+"Baustelle (OpenStreetMap)"
 )
 
 })
@@ -255,6 +253,9 @@ lon,
 
 }
 
+
+
+// Layer Control
 L.control.layers(null,{
 "🚧 Baustellen":constructionLayer,
 "🚓 Unfälle":accidentLayer,
