@@ -1,20 +1,21 @@
 import feedparser
 import json
 
-feed = "https://www.presseportal.de/rss/polizeipresse"
+feed="https://www.presseportal.de/rss/polizeipresse"
 
-d = feedparser.parse(feed)
+d=feedparser.parse(feed)
 
-items = []
+items=[]
 
-for entry in d.entries:
+orte=["Herford","Bünde","Löhne","Enger","Hiddenhausen","Spenge","Rödinghausen"]
 
-    if "Herford" in entry.title or "Bünde" or "Löhne" or "Hiddenhausen" or "Kirchlengern" or "Rödinghausen" or "Vlotho" in entry.title:
-        items.append({
-            "title": entry.title
-        })
+for e in d.entries:
 
-items = items[:15]
+    if any(o in e.title for o in orte):
+
+        items.append({"title":e.title})
+
+items=items[:15]
 
 with open("data/police.json","w") as f:
     json.dump(items,f)
