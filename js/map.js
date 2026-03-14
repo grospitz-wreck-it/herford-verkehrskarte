@@ -1,29 +1,34 @@
-fetch("data/traffic.json")
-.then(r=>r.json())
-.then(data=>{
+const map = L.map("map").setView([52.114,8.673],11)
 
-L.geoJSON(data,{
+L.tileLayer(
+"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+{
+attribution:"© OpenStreetMap"
+}
+).addTo(map)
 
-pointToLayer:function(feature,latlng){
+const cluster = L.markerClusterGroup()
 
-return L.circleMarker(latlng,{
+map.addLayer(cluster)
 
-radius:7,
-color:"#c4001a",
-fillColor:"#c4001a",
-fillOpacity:1,
-weight:1
+function emojiIcon(e){
 
-});
-
-},
-
-onEachFeature:function(feature,layer){
-
-layer.bindPopup(feature.properties.title);
+return L.divIcon({
+className:"emoji-marker",
+html:e,
+iconSize:[28,28]
+})
 
 }
 
-}).addTo(map);
+function addMarker(lat,lon,emoji,text){
 
-});
+const marker=L.marker([lat,lon],{
+icon:emojiIcon(emoji)
+})
+
+marker.bindPopup(text)
+
+cluster.addLayer(marker)
+
+}
