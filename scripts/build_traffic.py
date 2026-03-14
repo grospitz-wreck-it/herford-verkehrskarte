@@ -1,7 +1,7 @@
 import requests
 import json
 
-query = """
+query="""
 [out:json][timeout:25];
 
 (
@@ -12,39 +12,42 @@ way["highway"="construction"](52.05,8.45,52.25,8.85);
 out center;
 """
 
-r = requests.post(
-    "https://overpass-api.de/api/interpreter",
-    data=query
+r=requests.post(
+"https://overpass-api.de/api/interpreter",
+data=query
 )
 
-data = r.json()
+data=r.json()
 
-features = []
+features=[]
 
 for el in data["elements"]:
 
     if "lat" in el:
-        lat = el["lat"]
-        lon = el["lon"]
+        lat=el["lat"]
+        lon=el["lon"]
     else:
-        lat = el["center"]["lat"]
-        lon = el["center"]["lon"]
+        lat=el["center"]["lat"]
+        lon=el["center"]["lon"]
 
     features.append({
+
         "type":"Feature",
         "geometry":{
             "type":"Point",
             "coordinates":[lon,lat]
         },
         "properties":{
-            "title":"Baustelle"
+            "title":"Baustelle",
+            "icon":"🚧"
         }
+
     })
 
-geojson = {
-    "type":"FeatureCollection",
-    "features":features
+geo={
+"type":"FeatureCollection",
+"features":features
 }
 
 with open("data/traffic.json","w") as f:
-    json.dump(geojson,f)
+    json.dump(geo,f)
