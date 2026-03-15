@@ -1,171 +1,33 @@
-/* =========================
-GRUNDLAYOUT
-========================= */
-
-body{
+```css
+html, body {
+height:100%;
 margin:0;
-font-family:Arial, Helvetica, sans-serif;
-background:#f5f5f5;
+padding:0;
+font-family:Arial, sans-serif;
 }
-
-
-/* =========================
-HEADER
-========================= */
-
-.header{
-background:#ffffff;
-border-bottom:4px solid #c4001a;
-padding:14px;
-font-weight:bold;
-font-size:18px;
-}
-
-
-/* =========================
-TICKER
-========================= */
-
-.ticker{
-background:#111;
-color:white;
-padding:8px;
-overflow:hidden;
-white-space:nowrap;
-font-size:14px;
-}
-
-.ticker span{
-display:inline-block;
-padding-left:100%;
-animation:ticker 45s linear infinite;
-}
-
-@keyframes ticker{
-0%{transform:translateX(0)}
-100%{transform:translateX(-100%)}
-}
-
-
-/* =========================
-MAP
-========================= */
 
 #map{
-height:85vh;
+height:100%;
 width:100%;
-background:#e6e6e6;
 }
-
-
-/* =========================
-EMOJI MARKER
-========================= */
-
-.emoji-marker{
-font-size:32px;
-text-align:center;
-line-height:32px;
-}
-
-
-/* =========================
-CLUSTER STYLE
-========================= */
-
-/* Standard reset */
-
-.marker-cluster{
-background:transparent;
-border:none;
-}
-
-
-/* Kreis */
-
-.marker-cluster div{
-
-width:44px;
-height:44px;
-
-border-radius:50%;
-
-display:flex;
-align-items:center;
-justify-content:center;
-
-font-weight:bold;
-font-size:14px;
-
-border:3px solid white;
-
-box-shadow:0 3px 10px rgba(0,0,0,0.3);
-
-color:white;
-}
-
-
-/* kleine Cluster */
-
-.marker-cluster-small div{
-background:#f4c542;
-color:#000;
-}
-
-
-/* mittlere Cluster */
-
-.marker-cluster-medium div{
-background:#ff8c00;
-}
-
-
-/* große Cluster */
-
-.marker-cluster-large div{
-background:#c4001a;
-}
-
-
-/* =========================
-LEAFLET POPUP
-========================= */
-
-.leaflet-popup-content{
-font-size:14px;
-line-height:1.4;
-}
-
-
-/* =========================
-ZOOM BUTTONS
-========================= */
-
-.leaflet-control-zoom a{
-background:white;
-color:#333;
-border:none;
-box-shadow:0 2px 6px rgba(0,0,0,0.3);
-}
-
-
-/* =========================
-MOBILE OPTIMIERUNG
-========================= */
-
-@media (max-width:700px){
 
 .header{
+position:absolute;
+z-index:1000;
+background:white;
+padding:12px 16px;
+margin:10px;
+border-radius:8px;
+box-shadow:0 3px 10px rgba(0,0,0,0.25);
+}
+
+.header h1{
 font-size:16px;
-padding:12px;
+margin:0;
 }
 
-#map{
-height:80vh;
+.status{
+font-size:12px;
+color:#666;
 }
-
-.ticker{
-font-size:13px;
-}
-
-}
+```
