@@ -1,50 +1,34 @@
-// Autobahn API Loader
+```javascript
+export async function loadAutobahnMessages(layer){
 
-export async function loadAutobahnMessages(map, layerGroup) {
-    try {
-        const response = await fetch("https://verkehr.autobahn.de/o/autobahn");
+try{
 
-        if (!response.ok) {
-            throw new Error("Autobahn API Fehler");
-        }
+const response = await fetch("https://verkehr.autobahn.de/o/autobahn/A2/services");
 
-        const data = await response.json();
+const data = await response.json();
 
-        const roads = data.roads;
+data.services.forEach(service=>{
 
-        for (const road of roads) {
+if(!service.geometry) return;
 
-            const detailResponse = await fetch(`https://verkehr.autobahn.de/o/autobahn/${road}/services`);
-            const detail = await detailResponse.json();
+const coords = service.geometry.coordinates;
 
-            if (!detail.services) continue;
+const marker = L.marker([coords[1],coords[0]]);
 
-            detail.services.forEach(service => {
+marker.bindPopup(`
+<b>${service.title}</b><br>
+${service.description || ""}
+`);
 
-                if (!service.geometry) return;
+layer.addLayer(marker);
 
-                const coords = service.geometry.coordinates;
+});
 
-                const lat = coords[1];
-                const lon = coords[0];
+}catch(err){
 
-                const marker = L.circleMarker([lat, lon], {
-                    radius: 6,
-                    color: "#ff0000"
-                });
+console.error("Autobahn API Fehler",err);
 
-                marker.bindPopup(`
-                    <b>${service.title || "Verkehrsmeldung"}</b><br>
-                    ${service.description || ""}
-                `);
-
-                marker.addTo(layerGroup);
-
-            });
-
-        }
-
-    } catch (err) {
-        console.error("Autobahn API Fehler:", err);
-    }
 }
+
+}
+```
