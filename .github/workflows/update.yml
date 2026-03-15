@@ -25,6 +25,7 @@ jobs:
 
       - run: python scripts/build_police.py
       - run: python scripts/build_autobahn.py
+      - run: python scripts/build_autobahn_lines.py
 
       - run: |
           git config --global user.name "github-actions"
