@@ -30,11 +30,16 @@ for a in autobahns:
 
             for item in items:
 
-                if not item.get("coordinate"):
+                coord=item.get("coordinate")
+
+                if not coord:
                     continue
 
-                lat=item["coordinate"]["lat"]
-                lon=item["coordinate"]["long"]
+                lat=coord.get("lat")
+                lon=coord.get("long")
+
+                if not lat or not lon:
+                    continue
 
                 title=item.get("title","Autobahnmeldung")
 
@@ -52,15 +57,14 @@ for a in autobahns:
                     "properties":{
                         "title":title,
                         "description":desc,
-                        "icon":icon,
-                        "type":service
+                        "icon":icon
                     }
 
                 })
 
-        except:
+        except Exception as e:
 
-            print("error",a,service)
+            print("error",service,e)
 
 
 geo={
