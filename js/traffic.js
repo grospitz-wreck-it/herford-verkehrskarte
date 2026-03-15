@@ -1,20 +1,37 @@
-async function loadTraffic(){
+```javascript
+export async function loadTrafficData(layer){
 
-const r=await fetch("data/traffic.json")
+try{
 
-const data=await r.json()
+const response = await fetch("https://verkehr.autobahn.de/o/autobahn/A30/services");
 
-data.features.forEach(f=>{
+const data = await response.json();
 
-addMarker(
-f.geometry.coordinates[1],
-f.geometry.coordinates[0],
-f.properties.icon,
-f.properties.title
-)
+data.services.forEach(service=>{
 
-})
+if(!service.geometry) return;
+
+const coords = service.geometry.coordinates;
+
+const marker = L.circleMarker([coords[1],coords[0]],{
+radius:7,
+color:"#ff5500"
+});
+
+marker.bindPopup(`
+<b>${service.title}</b><br>
+${service.description || ""}
+`);
+
+layer.addLayer(marker);
+
+});
+
+}catch(err){
+
+console.error("Traffic Fehler",err);
 
 }
 
-loadTraffic()
+}
+```
