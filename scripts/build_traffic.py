@@ -1,31 +1,85 @@
 import requests
 import json
-from shapely.geometry import Point, shape
 
-# --------------------------------
-# Kreisgrenze laden
-# --------------------------------
+features=[]
+seen=set()
 
-with open("data/kreis-herford.geojson") as f:
-    kreis_geo = json.load(f)
+def add_feature(lat,lon,title,icon):
 
-kreis = shape(kreis_geo["features"][0]["geometry"])
+    key=f"{lat}-{lon}"
 
-features = []
-seen = set()
+    if key in seen:
+        return
+
+    seen.add(key)
+
+    features.append({
+
+        "type":"Feature",
+
+        "geometry":{
+            "type":"Point",
+            "coordinates":[lon,lat]
+        },
+
+        "properties":{
+            "title":title,
+            "icon":icon
+        }
+
+    })
 
 
-def inside_kreis(lat, lon):
+# -------------------------
+# Autobahn API
+# -------------------------
 
-    p = Point(lon, lat)
-    return kreis.contains(p)
+autobahns=["A2","A30"]
+
+services=[
+("roadworks","🚧"),
+("closures","⛔"),
+("warnings","⚠️"),
+("traffic","🚗")
+]
+
+for a in autobahns:
+
+    for service,icon in services:
+
+        try:
+
+            url=f"https://verkehr.autobahn.de/o/autobahn/{a}/services/{service}"
+
+            r=requests.get(url,timeout=30)
+
+            data=r.json()
+
+            items=data.get(service,[])
+
+            for item in items:
+
+                coord=item.get("coordinate")
+
+                if not coord:
+                    continue
+
+                lat=coord.get("lat")
+                lon=coord.get("long")
+
+                title=item.get("title","Autobahnmeldung")
+
+                add_feature(lat,lon,title,icon)
+
+        except:
+            print("Autobahn API failed")
 
 
-# --------------------------------
-# 1 OSM Baustellen
-# --------------------------------
+# -------------------------
+# OSM Baustellen
+# -------------------------
 
-query = """
+query="""
 [out:json][timeout:25];
 
 (
@@ -38,123 +92,42 @@ out center;
 
 try:
 
-    r = requests.post(
+    r=requests.post(
         "https://overpass-api.de/api/interpreter",
         data=query,
         timeout=60
     )
 
-    data = r.json()
+    data=r.json()
 
     for el in data["elements"]:
 
         if "lat" in el:
-            lat = el["lat"]
-            lon = el["lon"]
+
+            lat=el["lat"]
+            lon=el["lon"]
+
         else:
-            lat = el["center"]["lat"]
-            lon = el["center"]["lon"]
 
-        if not inside_kreis(lat,lon):
-            continue
+            lat=el["center"]["lat"]
+            lon=el["center"]["lon"]
 
-        key = f"{lat}-{lon}"
-
-        if key in seen:
-            continue
-
-        seen.add(key)
-
-        features.append({
-
-            "type":"Feature",
-
-            "geometry":{
-                "type":"Point",
-                "coordinates":[lon,lat]
-            },
-
-            "properties":{
-                "title":"Baustelle",
-                "icon":"🚧"
-            }
-
-        })
+        add_feature(lat,lon,"Baustelle","🚧")
 
 except:
 
     print("OSM failed")
 
 
-# --------------------------------
-# 2 NRW Verkehrsmeldungen
-# --------------------------------
-
-try:
-
-    url = "https://www.verkehr.nrw/api/traffic/messages"
-
-    r = requests.get(url,timeout=30)
-
-    data = r.json()
-
-    for m in data["messages"]:
-
-        if not m.get("coordinate"):
-            continue
-
-        lat = m["coordinate"]["latitude"]
-        lon = m["coordinate"]["longitude"]
-
-        if not inside_kreis(lat,lon):
-            continue
-
-        text = m.get("message","Verkehrsmeldung")
-
-        key = f"{lat}-{lon}"
-
-        if key in seen:
-            continue
-
-        seen.add(key)
-
-        icon="⚠️"
-
-        if "Stau" in text:
-            icon="🚗"
-
-        if "Baustelle" in text:
-            icon="🚧"
-
-        features.append({
-
-            "type":"Feature",
-
-            "geometry":{
-                "type":"Point",
-                "coordinates":[lon,lat]
-            },
-
-            "properties":{
-                "title":text,
-                "icon":icon
-            }
-
-        })
-
-except:
-
-    print("NRW traffic failed")
-
-
-# --------------------------------
+# -------------------------
 # speichern
-# --------------------------------
+# -------------------------
 
-geo = {
+geo={
 "type":"FeatureCollection",
 "features":features
 }
 
 with open("data/traffic.json","w") as f:
+
     json.dump(geo,f)
